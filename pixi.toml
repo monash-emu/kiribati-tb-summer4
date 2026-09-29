@@ -37,6 +37,7 @@ format-check = "black --check src tests scripts reference/make_golden.py"
 notebook = "jupyter lab notebooks"
 synthetic-recovery = "python scripts/synthetic_recovery.py"
 find-map = "python scripts/find_map.py"
+calibrate = "python scripts/calibrate.py"
 run-notebooks = "pytest -q -m slow tests/test_notebooks.py"
 
 [feature.reference]
