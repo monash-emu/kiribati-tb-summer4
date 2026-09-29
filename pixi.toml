@@ -23,6 +23,8 @@ jax = "==0.7.2"
 jaxlib = "==0.7.2"
 summer4 = { git = "https://github.com/monash-emu/summer4.git", tag = "v0.2.0a5", extras = ["calibration", "pandas", "frames"] }
 arviz = "*"
+h5netcdf = "*"
+h5py = "*"
 plotly = ">=6.6, <7"
 nbformat = "*"
 kiribati_tb = { path = ".", editable = true }
@@ -30,9 +32,11 @@ kiribati_tb = { path = ".", editable = true }
 [tasks]
 test = "pytest -q -m 'not slow'"
 test-slow = "pytest -q -m slow"
-format = "black src tests reference/make_golden.py"
-format-check = "black --check src tests reference/make_golden.py"
+format = "black src tests scripts reference/make_golden.py"
+format-check = "black --check src tests scripts reference/make_golden.py"
 notebook = "jupyter lab notebooks"
+synthetic-recovery = "python scripts/synthetic_recovery.py"
+find-map = "python scripts/find_map.py"
 run-notebooks = "pytest -q -m slow tests/test_notebooks.py"
 
 [feature.reference]

@@ -11,6 +11,7 @@ outputs start in 2026.
 
 from __future__ import annotations
 
+import dataclasses
 from collections.abc import Iterable, Mapping, Sequence
 from typing import Any
 
@@ -329,3 +330,30 @@ def run_outputs(
     """Solve 1850–2035 and return the ``derived_outputs`` frame for ``outputs``."""
     result = solve(compiled, params, outputs.plan(SavePlan(ts=SAVE_TIMES)))
     return derived_outputs_frame(outputs.evaluate(result, params))
+
+
+def _inline(expr: OutputExpr, outputs: OutputSet, keep: set[str]) -> OutputExpr:
+    """``expr`` with every reference to a name outside ``keep`` replaced by its expression."""
+    if expr.kind == "ref" and expr.name is not None and expr.name not in keep:
+        return _inline(outputs[expr.name], outputs, keep)
+    if not expr.kids:
+        return expr
+    return dataclasses.replace(expr, kids=tuple(_inline(k, outputs, keep) for k in expr.kids))
+
+
+def restrict_outputs(outputs: OutputSet, names: Iterable[str]) -> OutputSet:
+    """An ``OutputSet`` with only ``names`` as keys; other outputs they read are inlined.
+
+    Leaves are shared saves either way, so nothing extra is solved for. Used where summer4 acts
+    on every key of a set: a calibration scores ten targets, and ``posterior_runs`` records
+    every key for every draw (see docs/summer4-workarounds.md, W5).
+    """
+    keep = set(names)
+    restricted = OutputSet()
+    for name in outputs.keys():
+        if name in keep:
+            restricted[name] = _inline(outputs[name], outputs, keep)
+    missing = keep - set(restricted.keys())
+    if missing:
+        raise KeyError(f"Unknown outputs: {sorted(missing)}")
+    return restricted
