@@ -18,12 +18,15 @@ def read_golden(fixture: str, kind: str) -> pd.DataFrame:
 def parity_report(got: pd.DataFrame, expected: pd.DataFrame, atol: float) -> pd.DataFrame:
     """Max absolute and relative error per column, and whether it passes ``RTOL``/``atol``.
 
-    Relative error is ``|got - expected| / max(|expected|, atol)``.
+    Relative error is ``|got - expected| / max(|expected|, atol)``. A value that is NaN in both
+    (a 0/0 ratio) counts as equal.
     """
-    got = got[expected.columns]
-    diff = (got.to_numpy() - expected.to_numpy()).__abs__()
-    scale = np.maximum(np.abs(expected.to_numpy()), atol)
-    passes = diff <= atol + RTOL * np.abs(expected.to_numpy())
+    got_arr = got[expected.columns].to_numpy()
+    exp_arr = expected.to_numpy()
+    both_nan = np.isnan(got_arr) & np.isnan(exp_arr)  # 0/0 ratios at 1850 in both models
+    diff = np.where(both_nan, 0.0, np.abs(got_arr - exp_arr))
+    scale = np.maximum(np.where(both_nan, 1.0, np.abs(exp_arr)), atol)
+    passes = diff <= atol + RTOL * np.abs(np.where(both_nan, 0.0, exp_arr))
     return pd.DataFrame(
         {
             "max_abs": diff.max(axis=0),

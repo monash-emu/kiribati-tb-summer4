@@ -38,12 +38,16 @@ from summer4 import (
     TraitChain,
     TransitionFlow,
     exp,
+    floor,
+    Lookup,
     maximum,
     tanh,
 )
 from summer4.data import Data
+from summer4.epi import FOIKind, ForceOfInfection, MixingMatrix
 
 from kiribati_tb.demography import AGE_GROUPS, Demography, load_demography
+from kiribati_tb.mixing import yearly_matrices
 from kiribati_tb.params import read_parameter_sheet
 
 COMPARTMENTS: tuple[str, ...] = (
@@ -67,6 +71,9 @@ AGE = Property("age", AGE_GROUPS)
 REACH = Property("reach", REACH_STRATA)
 
 SEED = 100.0
+START_TIME = 1850.0
+END_TIME = 2035.0
+MIXING_STACK = "mixing_stack"
 # summer2's ``get_sigmoidal_interpolation_function`` default curvature. summer4's ``sharpness``
 # is the same parameter but defaults to 1 (near-linear), so every sigmoidal table here passes it.
 SUMMER2_SIGMOID_CURVATURE = 16.0
@@ -89,15 +96,93 @@ def by_latency_band(stem: str) -> tuple[Multiply, ...]:
     )
 
 
-def pmap() -> PropertyMap:
-    """State × age × reachability: 160 compartments."""
-    return PropertyMap.from_property(STATE).stratify(AGE).stratify(REACH)
+@dataclass(frozen=True)
+class ModelConfig:
+    """Structural choices that change the compiled model.
+
+    Attributes:
+        heterogeneous_mixing: Age-structured, time-varying mixing (the original's default).
+            ``False`` is the original's homogeneous-mixing sensitivity analysis: one mixing
+            pool for the whole population.
+    """
+
+    heterogeneous_mixing: bool = True
+
+
+# WORKAROUND(summer4): ForceOfInfection always groups by a property. The original's homogeneous
+# mixing has one mixing category (the whole population), so the homogeneous map carries a
+# one-trait property to group by. See docs/summer4-workarounds.md, W1.
+POOL = Property("pool", ("all",))
+
+
+def pmap(config: ModelConfig = ModelConfig()) -> PropertyMap:
+    """State × age × reachability: 160 compartments (plus a one-trait pool if homogeneous)."""
+    base = PropertyMap.from_property(STATE).stratify(AGE).stratify(REACH)
+    return base if config.heterogeneous_mixing else base.stratify(POOL)
 
 
 def compartment_labels(model_map: PropertyMap) -> tuple[str, ...]:
     """summer2 compartment names (``{state}Xage_{age}Xreachability_{reach}``) in map order."""
     rows = model_map.to_dicts()
     return tuple(f"{r['state']}Xage_{r['age']}Xreachability_{r['reach']}" for r in rows)
+
+
+def force_of_infection(demog: Demography, config: ModelConfig) -> ForceOfInfection:
+    """Generalised force of infection ``M(t) @ (I_w / N ** infection_pop_scale)`` per group.
+
+    The contact rate is rescaled by the 2020 population so that ``raw_transmission_rate`` keeps
+    its order of magnitude from density- to frequency-dependent transmission. Infectiousness is
+    reduced for less infectious and subclinical disease, and is zero under 15.
+    """
+    exponent = Param("infection_pop_scale")
+    children = AGE.isin([a for a in AGE_GROUPS if int(a) < 15])
+    infectiousness = [
+        (STATE.isin(["subclin_lowinf", "clin_lowinf"]), Param("rel_infectiousness_lowinf")),
+        (STATE.isin(["subclin_lowinf", "subclin_inf"]), Param("rel_infectiousness_subclin")),
+        (children, 0.0),
+    ]
+    if config.heterogeneous_mixing:
+        group_by, mixing = AGE, MixingMatrix(
+            AGE, Lookup(Param(MIXING_STACK), floor(Time() - START_TIME)), normalize="none"
+        )
+    else:
+        group_by, mixing = POOL, None
+    return ForceOfInfection(
+        "infection",
+        infectious=STATE.isin(ACTIVE_COMPS),
+        group_by=group_by,
+        mixing=mixing,
+        kind=FOIKind.GENERALISED,
+        exponent=exponent,
+        contact_rate=Param("raw_transmission_rate") * demog.pop_2020**exponent,
+        infectiousness=infectiousness,
+    )
+
+
+def add_infection(model: FlowModel, foi: ForceOfInfection) -> None:
+    """Infection and reinfection from the four susceptible states into ``incipient``.
+
+    ``rel_sus_cleared`` applies to both ``cleared`` and ``recovered``; BCG reduces susceptibility
+    of the ``mtb_naive`` under-15s; the unreachable are more susceptible.
+    """
+    children = AGE.isin([a for a in AGE_GROUPS if int(a) < 15])
+    unreachable = Multiply(Param("rel_sus_unreachable"), where=REACH["unreachable"])
+    relative = {
+        "mtb_naive": (Multiply(Param("rel_sus_children"), where=children),),
+        "contained": (Multiply(Param("rel_sus_contained")),),
+        "cleared": (Multiply(Param("rel_sus_cleared")),),
+        "recovered": (Multiply(Param("rel_sus_cleared")),),
+    }
+    for source, adjust in relative.items():
+        model.add_flow(
+            TransitionFlow(
+                f"infection_from_{source}",
+                STATE[source],
+                STATE["incipient"],
+                foi,
+                adjust=(*adjust, unreachable),
+            )
+        )
 
 
 def passive_detection_rate() -> object:
@@ -306,10 +391,11 @@ def initial_population(demog: Demography) -> InitialPopulation:
     )
 
 
-def build_model() -> FlowModel:
-    """The model without transmission (phase K1): structure, demography, care cascade."""
+def build_model(config: ModelConfig = ModelConfig()) -> FlowModel:
+    """The Kiribati TB model without screening."""
     demog = load_demography()
-    model = FlowModel(pmap())
+    model = FlowModel(pmap(config))
+    add_infection(model, force_of_infection(demog, config))
     background = death_rate(demog)
     success = treatment_success()
     outcomes = treatment_outcomes(background, success)
@@ -321,19 +407,24 @@ def build_model() -> FlowModel:
     return model
 
 
-def compile_model() -> CompiledModel:
-    """Compile :func:`build_model`."""
-    return build_model().compile()
+def add_mixing_stack(params: Mapping[str, Any]) -> dict[str, Any]:
+    """Run-start stage: add this parameter set's yearly mixing matrices as ``mixing_stack``."""
+    return {**params, MIXING_STACK: yearly_matrices(params)}
 
 
-START_TIME = 1850.0
-END_TIME = 2035.0
+def compile_model(config: ModelConfig = ModelConfig()) -> CompiledModel:
+    """Compile :func:`build_model`; heterogeneous mixing builds its matrices at run start."""
+    prepare = add_mixing_stack if config.heterogeneous_mixing else None
+    return build_model(config).compile(prepare_fn=prepare)
+
+
 SAVE_TIMES: np.ndarray = np.arange(START_TIME, END_TIME + 1.0)
-# The goldens use summer2gen's Dormand-Prince odeint at rtol = atol = 1e-8; this is the same
-# method and tolerance in diffrax. summer2gen also caps the step at one year; diffrax's
-# PIDController takes no step cap through ``CompiledModel.run`` in summer4 v0.2.0a5, and the
-# parity suite shows it is not needed at these tolerances.
-SOLVER_KWARGS: dict[str, Any] = {"solver": "dopri5", "rtol": 1e-8, "atol": 1e-8}
+# The goldens use summer2gen's Dormand-Prince odeint at rtol = atol = 1e-10; this is the same
+# method and tolerance in diffrax. The yearly mixing matrix jumps at every integer year, and at
+# 1e-8 both solvers carry ~1.5e-5 relative error from those jumps, above the parity bar; at 1e-10
+# the port is within 1.5e-7 of the original. summer2gen also caps the step at one year;
+# ``CompiledModel.run`` in summer4 v0.2.0a5 takes no step cap and none is needed here.
+SOLVER_KWARGS: dict[str, Any] = {"solver": "dopri5", "rtol": 1e-10, "atol": 1e-10}
 
 
 def solve(compiled: CompiledModel, params: Mapping[str, Any], save: SavePlan) -> Result:

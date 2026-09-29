@@ -17,8 +17,8 @@ model_config:
   pop_scaling: 0.3389457291649224
   heterogeneous_mixing: true
 solver_args:
-  rtol: 1.0e-08
-  atol: 1.0e-08
+  rtol: 1.0e-10
+  atol: 1.0e-10
 params:
   a_spread: 8.5
   bg_mixing: 0.030000000000000002

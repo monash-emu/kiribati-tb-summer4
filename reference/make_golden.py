@@ -9,8 +9,10 @@ the two files changed and why). Scenarios come from the copied ``data/scenarios.
 
 Each fixture uses the constant sheet of ``data/parameters.xlsx`` with every prior at the
 midpoint of its range, then the scenario's ``params_ow``. The solver is summer2gen's default
-JAX ``odeint`` (Dormand-Prince, ``max_step=1``) with ``rtol = atol = 1e-8`` instead of the
-default ``1.4e-4``, so that reference error sits well under the parity tolerance.
+JAX ``odeint`` (Dormand-Prince, ``max_step=1``) with ``rtol = atol = 1e-10`` instead of the
+default ``1.4e-4``, so that reference error sits well under the parity tolerance. (The plan
+said ``1e-8``; at ``1e-8`` the original's own solver error with the yearly mixing matrix is
+1.5e-5 relative, measured against a ``1e-10`` run, which is above the ``1e-5`` parity bar.)
 
 Every derived output is saved, including the ``save_results=False`` intermediates, because the
 port reproduces those names too.
@@ -46,16 +48,20 @@ sys.path.insert(0, str(ROOT))
 from summer2 import CompartmentalModel  # noqa: E402
 from summer2.functions import time as stf  # noqa: E402
 from summer2.parameters import Function, Parameter, Time  # noqa: E402
+from tbh.age_mixing import gen_mixing_matrix_func  # noqa: E402
 from tbh.demographic_tools import (  # noqa: E402
+    build_age_weight_lookup,
+    build_agegap_lookup,
     get_death_rates_by_age,
     get_population_over_time,
 )
+from tbh.paths import DATA_FOLDER  # noqa: E402
 from tbh.model import get_neg_tx_outcome_funcs, get_tb_model, tanh_based_scaleup  # noqa: E402
 
 from data.scenarios import SCENARIOS  # noqa: E402
 
 OUT = ROOT / "tests" / "golden"
-SOLVER_ARGS = {"rtol": 1e-8, "atol": 1e-8}
+SOLVER_ARGS = {"rtol": 1e-10, "atol": 1e-10}
 
 # DEFAULT_MODEL_CONFIG from tbh/runner_tools.py (not vendored: it imports pymc and estival).
 MODEL_CONFIG: dict[str, Any] = {
@@ -207,9 +213,46 @@ def save_demography() -> None:
     print(f"demography: {len(funcs)} series at {len(times)} times")
 
 
+MIXING_TIMES = (1850.0, 1900.5, 1949.9, 1950.0, 1963.2, 1987.7, 2000.0, 2020.5, 2025.0, 2035.0)
+MIXING_DRAWS = (
+    (0.03, 8.5, 0.505),
+    (0.01, 2.0, 0.01),
+    (0.05, 15.0, 1.0),
+    (0.02, 4.0, 0.8),
+    (0.045, 11.0, 0.1),
+)
+
+
+def save_mixing() -> None:
+    """The original ``build_mixing_matrix`` at 10 times for 5 (bg, spread, pc) draws."""
+    config = dict(MODEL_CONFIG)
+    age_groups = config["age_groups"]
+    single, grouped = get_population_over_time(
+        config["iso3"], age_groups=age_groups, scaling_factor=config["pop_scaling"]
+    )
+    fertility = pd.read_csv(DATA_FOLDER / f"un_fertility_rates_{config['iso3']}.csv", index_col=0)
+    fertility = fertility.div(fertility.sum(axis=1), axis=0)
+    fert_probs, fert_year0, fert_age0 = build_agegap_lookup(fertility)
+    weights, weights_year0 = build_age_weight_lookup(age_groups, single)
+    build = gen_mixing_matrix_func(
+        grouped, fert_probs, fert_year0, fert_age0, weights, weights_year0, age_groups
+    )
+    n = len(age_groups)
+    rows = []
+    for draw, (bg, spread, pc) in enumerate(MIXING_DRAWS):
+        for t in MIXING_TIMES:
+            matrix = np.asarray(build(bg, spread, pc, np.asarray(t)))
+            row = {"draw": draw, "bg_mixing": bg, "a_spread": spread, "pc_strength": pc, "time": t}
+            row |= {f"m_{i}_{j}": float(matrix[i, j]) for i in range(n) for j in range(n)}
+            rows.append(row)
+    _write_parquet(pd.DataFrame(rows), OUT / "mixing.parquet")
+    print(f"mixing: {len(MIXING_DRAWS)} draws at {len(MIXING_TIMES)} times")
+
+
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     save_demography()
+    save_mixing()
     only = set(sys.argv[1:])
     for name, fixture in FIXTURES.items():
         if not only or name in only:
