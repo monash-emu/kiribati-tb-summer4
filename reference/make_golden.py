@@ -20,6 +20,11 @@ Writes, per fixture, ``tests/golden/<fixture>/``:
 - ``compartments.parquet``: ``time`` then one column per compartment, ``str(Compartment)``;
 - ``derived.parquet``: ``time`` then one column per derived output, sorted by name;
 - ``params.yaml``: the exact parameter dict and model config used.
+
+and ``tests/golden/demography.parquet``: the original's time-varying inputs (per-age death
+rates, births entry rate, treatment success, per-age negative treatment outcomes, passive
+detection rate) evaluated every half year from 1935 to 2035 through a one-compartment
+summer2 model's computed values.
 """
 
 from __future__ import annotations
@@ -38,7 +43,14 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "reference"))
 sys.path.insert(0, str(ROOT))
 
-from tbh.model import get_tb_model  # noqa: E402
+from summer2 import CompartmentalModel  # noqa: E402
+from summer2.functions import time as stf  # noqa: E402
+from summer2.parameters import Function, Parameter, Time  # noqa: E402
+from tbh.demographic_tools import (  # noqa: E402
+    get_death_rates_by_age,
+    get_population_over_time,
+)
+from tbh.model import get_neg_tx_outcome_funcs, get_tb_model, tanh_based_scaleup  # noqa: E402
 
 from data.scenarios import SCENARIOS  # noqa: E402
 
@@ -136,9 +148,72 @@ def save(name: str, fixture: dict[str, Any]) -> None:
     print(f"{name}: {comps.shape[1] - 1} compartments, {derived.shape[1] - 1} derived outputs")
 
 
+def entry_rate_function(agg_pop: pd.Series) -> Any:
+    """The births entry rate exactly as ``add_births_and_deaths`` builds it."""
+    full_index = pd.Index(range(agg_pop.index.min(), agg_pop.index.max() + 1))
+    pop_entry = agg_pop.reindex(full_index).interpolate().diff().dropna()
+    return stf.get_sigmoidal_interpolation_function(
+        [pop_entry.index.min() - 1] + pop_entry.index.to_list(), [0.0] + pop_entry.to_list()
+    )
+
+
+def save_demography() -> None:
+    """Evaluate the original's time-varying inputs on a half-year grid."""
+    params, tv_params = read_parameters()
+    config = dict(MODEL_CONFIG)
+    single, grouped = get_population_over_time(
+        config["iso3"], age_groups=config["age_groups"], scaling_factor=config["pop_scaling"]
+    )
+    death_funcs = get_death_rates_by_age(config, grouped)
+    tsr = stf.get_linear_interpolation_function(
+        tv_params["tx_success_pct"].index.to_list(),
+        (tv_params["tx_success_pct"] / 100.0).to_list(),
+    )
+    outcomes = get_neg_tx_outcome_funcs(death_funcs, tsr)
+    detection = Parameter("recent_detection_rate") * Function(
+        tanh_based_scaleup,
+        [
+            Time,
+            Parameter("passive_detection_shape"),
+            Parameter("passive_detection_inflection"),
+            Parameter("passive_detection_past_frac"),
+            1.0,
+        ],
+    )
+    funcs: dict[str, Any] = {
+        "entry_rate": entry_rate_function(grouped.sum(axis=1)),
+        "tx_success": tsr,
+        "passive_detection_rate": detection,
+    }
+    for age in config["age_groups"]:
+        funcs[f"death_rate_{age}"] = death_funcs[age]
+        funcs[f"tx_relapse_{age}"] = outcomes[age]["relapse"]
+        funcs[f"tx_death_{age}"] = outcomes[age]["death"]
+
+    model = CompartmentalModel(
+        times=(1935, 2035), compartments=["x"], infectious_compartments=[], timestep=0.5
+    )
+    model.set_initial_population({"x": 1.0})
+    model.add_death_flow("never", 0.0, "x")
+    for name, func in funcs.items():
+        model.add_computed_value_func(name, func)
+        model.request_computed_value_output(name)
+    model.run(params, solver_args=SOLVER_ARGS)
+    frame = model.get_derived_outputs_df()
+    times = np.asarray(frame.index, dtype=float)
+    frame = frame[list(funcs)].reset_index(drop=True).astype(float)
+    frame.insert(0, "time", times)
+    _write_parquet(frame, OUT / "demography.parquet")
+    print(f"demography: {len(funcs)} series at {len(times)} times")
+
+
 def main() -> None:
+    OUT.mkdir(parents=True, exist_ok=True)
+    save_demography()
+    only = set(sys.argv[1:])
     for name, fixture in FIXTURES.items():
-        save(name, fixture)
+        if not only or name in only:
+            save(name, fixture)
 
 
 if __name__ == "__main__":

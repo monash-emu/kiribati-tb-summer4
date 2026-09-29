@@ -33,6 +33,7 @@ test-slow = "pytest -q -m slow"
 format = "black src tests reference/make_golden.py"
 format-check = "black --check src tests reference/make_golden.py"
 notebook = "jupyter lab notebooks"
+run-notebooks = "pytest -q -m slow tests/test_notebooks.py"
 
 [feature.reference]
 platforms = ["osx-arm64", "linux-64"]
