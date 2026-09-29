@@ -47,6 +47,7 @@ from summer4.data import Data
 from summer4.epi import FOIKind, ForceOfInfection, MixingMatrix
 
 from kiribati_tb.demography import AGE_GROUPS, Demography, load_demography
+from kiribati_tb.interventions import ScreeningProgram
 from kiribati_tb.mixing import yearly_matrices
 from kiribati_tb.params import read_parameter_sheet
 
@@ -104,9 +105,15 @@ class ModelConfig:
         heterogeneous_mixing: Age-structured, time-varying mixing (the original's default).
             ``False`` is the original's homogeneous-mixing sensitivity analysis: one mixing
             pool for the whole population.
+        screening: Screening programs (``kiribati_tb.interventions``); none by default.
     """
 
     heterogeneous_mixing: bool = True
+    screening: tuple[ScreeningProgram, ...] = ()
+
+    def screening_flows(self) -> tuple[str, ...]:
+        """Names of the screening flows, in declaration order."""
+        return tuple(name for program in self.screening for name in program.flow_names())
 
 
 # WORKAROUND(summer4): ForceOfInfection always groups by a property. The original's homogeneous
@@ -391,8 +398,26 @@ def initial_population(demog: Demography) -> InitialPopulation:
     )
 
 
+def add_screening(model: FlowModel, programs: tuple[ScreeningProgram, ...]) -> None:
+    """One flow per program and detected state; the unreachable are never screened."""
+    unreachable = Multiply(0.0, where=REACH["unreachable"])
+    for program in programs:
+        raw = program.raw_rate()
+        tool = program.tool
+        for (state, sensitivity), name in zip(tool.sensitivities, program.flow_names()):
+            model.add_flow(
+                TransitionFlow(
+                    name,
+                    STATE[state],
+                    STATE[tool.dest],
+                    sensitivity * tool.success_prop * raw,
+                    adjust=(*program.age_adjustments(), unreachable),
+                )
+            )
+
+
 def build_model(config: ModelConfig = ModelConfig()) -> FlowModel:
-    """The Kiribati TB model without screening."""
+    """The Kiribati TB model, with ``config``'s mixing and screening."""
     demog = load_demography()
     model = FlowModel(pmap(config))
     add_infection(model, force_of_infection(demog, config))
@@ -401,6 +426,7 @@ def build_model(config: ModelConfig = ModelConfig()) -> FlowModel:
     outcomes = treatment_outcomes(background, success)
     add_natural_history(model)
     add_detection_and_treatment(model, outcomes, success)
+    add_screening(model, config.screening)
     add_ageing(model)
     add_births_and_deaths(model, demog, background, outcomes)
     model.set_initial_population(initial_population(demog))

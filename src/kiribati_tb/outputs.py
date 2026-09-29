@@ -300,10 +300,9 @@ def add_computed_values(outputs: OutputSet, config: ModelConfig) -> None:
         outputs["mixing_matrix_distance"] = SaveFn(mixing_matrix_distance)
 
 
-def build_outputs(
-    config: ModelConfig = ModelConfig(), screening_flows: Sequence[str] = ()
-) -> OutputSet:
+def build_outputs(config: ModelConfig = ModelConfig()) -> OutputSet:
     """Every derived output of the original model, by the original's names."""
+    screening_flows = config.screening_flows()
     outputs = OutputSet()
     add_population(outputs)
     add_births_and_incidence(outputs)
