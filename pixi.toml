@@ -1,0 +1,47 @@
+[workspace]
+name = "kiribati-tb-summer4"
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "linux-64"]
+
+[dependencies]
+python = "3.13.*"
+pandas = ">=2.2"
+openpyxl = "*"
+pyarrow = "*"
+pyyaml = "*"
+matplotlib = "*"
+jupyterlab = "*"
+ipykernel = "*"
+pytest = "*"
+black = "*"
+
+[pypi-dependencies]
+# JAX 0.8+ implements pmap as jit(shard_map), which crashes Diffrax's default
+# RecursiveCheckpointAdjoint under parallel chains (found in tb-macro-summer4).
+# 0.7.2 is the newest release where parallel chains work without a flag.
+jax = "==0.7.2"
+jaxlib = "==0.7.2"
+summer4 = { git = "https://github.com/monash-emu/summer4.git", tag = "v0.2.0a5", extras = ["calibration", "pandas", "frames"] }
+arviz = "*"
+plotly = ">=6.6, <7"
+nbformat = "*"
+kiribati_tb = { path = ".", editable = true }
+
+[tasks]
+test = "pytest -q -m 'not slow'"
+test-slow = "pytest -q -m slow"
+format = "black src tests reference/make_golden.py"
+format-check = "black --check src tests reference/make_golden.py"
+notebook = "jupyter lab notebooks"
+
+[feature.reference]
+platforms = ["osx-arm64", "linux-64"]
+# Versions match monash-emu/kiribati_tb_modelling@46a63f0 pixi.lock, so the goldens are
+# produced by the same stack the published analysis ran on.
+dependencies = { python = "3.10.*", numpy = "==1.25.2", pandas = "==2.3.0", openpyxl = "*", pyarrow = "==21.0.0", pyyaml = "*" }
+pypi-dependencies = { summerepi2 = { git = "https://github.com/monash-emu/summer2gen.git", rev = "aad6d4b414db2dbf81ea64e8aece5e0c6cdaa425" }, jax = "==0.4.38", jaxlib = "==0.4.38", computegraph = "==0.4.5" }
+tasks = { golden = "python reference/make_golden.py" }
+
+[environments]
+default = { solve-group = "default" }
+reference = { features = ["reference"], no-default-feature = true }
