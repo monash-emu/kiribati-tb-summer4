@@ -8,6 +8,8 @@ prior-distributed standard deviation.
 
 from __future__ import annotations
 
+import json
+
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from functools import cache
@@ -159,8 +161,16 @@ def calibration_setup(
     return CalibrationSetup(config, params, priors, targets)
 
 
-# The original calibrated with summer2gen's default solver tolerance (``rtol = atol = 1.4e-4``).
-CALIBRATION_SOLVER: dict[str, Any] = {"solver": "dopri5", "rtol": 1.4e-4, "atol": 1.4e-4}
+# The original calibrated with summer2gen's default solver tolerance (``rtol = atol = 1.4e-4``);
+# its log density is within 0.003 nats of a 1e-10 solve and its gradient within 0.3%. A
+# plausible parameter set takes 650-850 steps; ``max_steps`` caps the cost of a pathological
+# one (summer4's default, 64 per year, is 11,840) and scores it as a failed solve.
+CALIBRATION_SOLVER: dict[str, Any] = {
+    "solver": "dopri5",
+    "rtol": 1.4e-4,
+    "atol": 1.4e-4,
+    "max_steps": 4096,
+}
 
 
 def bayesian_model(
@@ -182,6 +192,55 @@ def bayesian_model(
         outputs=restrict_outputs(outputs, keys),
         run_kwargs=run_kwargs,
     )
+
+
+# For the Laplace metric's finite-difference Hessian, where solver noise must be small.
+TIGHT_SOLVER: dict[str, Any] = {"solver": "dopri5", "rtol": 1e-8, "atol": 1e-8, "max_steps": 16384}
+
+
+def forward_mode_solver(solver: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    """``solver`` (default :data:`CALIBRATION_SOLVER`) with diffrax's forward-mode adjoint.
+
+    Reverse-mode gradients of the adaptive solve are NaN wherever a *rejected* trial step
+    evaluated the vector field at an invalid state (``0 * nan`` in the backward pass): 17% of
+    256 prior design points, none of 96 published posterior draws. Forward mode discards the
+    rejected step's tangent instead, so it stays finite; it costs about 1.5x a reverse-mode
+    gradient here. See docs/summer4-workarounds.md, S5.
+    """
+    import diffrax
+
+    from summer4.solvers import Diffrax
+
+    spec = dict(CALIBRATION_SOLVER if solver is None else solver)
+    controller = diffrax.PIDController(rtol=spec.pop("rtol"), atol=spec.pop("atol"))
+    name = spec.pop("solver")
+    solvers = {"dopri5": diffrax.Dopri5, "tsit5": diffrax.Tsit5, "heun": diffrax.Heun}
+    backend = Diffrax(
+        solvers[name](), stepsize_controller=controller, adjoint=diffrax.ForwardMode()
+    )
+    return {"solver": backend, **spec}
+
+
+def prior_midpoints(setup: CalibrationSetup) -> dict[str, float]:
+    """The centre of every calibrated site's uniform prior (``mixing_dist_sd`` included)."""
+    sites = list(setup.priors)
+    for target in setup.targets:
+        sd = getattr(target.likelihood, "sd", None)
+        if isinstance(sd, Prior):
+            sites.append(sd)
+    return {p.name: 0.5 * (p.lo + p.hi) for p in sites if isinstance(p, Uniform)}
+
+
+def map_point(setup: CalibrationSetup) -> dict[str, float]:
+    """The optax MAP from ``outputs/find_map/base/map.json`` if written, else prior midpoints."""
+    from kiribati_tb.paths import REPO_ROOT
+
+    path = REPO_ROOT / "outputs" / "find_map" / "base" / "map.json"
+    mid = prior_midpoints(setup)
+    if not path.exists():
+        return mid
+    fitted = json.loads(path.read_text())["params"]
+    return {k: float(fitted.get(k, v)) for k, v in mid.items()}
 
 
 def with_params(setup: CalibrationSetup, overrides: Mapping[str, float]) -> CalibrationSetup:

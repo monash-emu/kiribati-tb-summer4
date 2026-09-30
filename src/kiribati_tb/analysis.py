@@ -16,7 +16,9 @@ from __future__ import annotations
 
 import subprocess
 import time
+import warnings
 from collections.abc import Mapping, Sequence
+from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
@@ -26,9 +28,15 @@ import yaml
 
 from summer4.epi.calibration import Scenario as RunScenario
 
-from kiribati_tb.calibration import CalibrationSetup, bayesian_model
+from kiribati_tb.calibration import (
+    TIGHT_SOLVER,
+    CalibrationSetup,
+    bayesian_model,
+    forward_mode_solver,
+)
 from kiribati_tb.demography import AGE_GROUPS
 from kiribati_tb.model import ACTIVE_COMPS, COMPARTMENTS, ModelConfig, compile_model
+from kiribati_tb.pipeline import PipelineConfig, calibrate
 from kiribati_tb.outputs import AGE_AGGREGATES, REACHABLE, build_outputs, restrict_outputs
 from kiribati_tb.scenarios import SCENARIOS_BY_ID
 
@@ -205,18 +213,18 @@ def run_full_analysis(
     *,
     sensitivity_analysis: str | None = None,
     param_overrides: Mapping[str, float] | None = None,
-    walkers: int = 40,
-    warmup: int = 5000,
-    samples: int = 5000,
+    config: PipelineConfig | None = None,
     full_runs_samples: int = 1000,
-    burn_in: int = 0,
     seed: int = 0,
     scenario_ids: Sequence[str] | None = None,
 ) -> Any:
-    """Calibrate with AIES, then run and write the scenarios (``run_full_analysis``).
+    """Calibrate with :func:`kiribati_tb.pipeline.calibrate`, then run and write the scenarios.
 
-    Writes ``idata.nc`` next to the full-run files. ``burn_in`` is in draws per walker, applied
-    after numpyro's own warmup.
+    Every calibration stage checkpoints into ``folder`` (``optima.npz``, ``nuts/``), so
+    rerunning the same call after a kill resumes it. ``idata.nc`` holds every post-warmup draw;
+    ``details.yaml`` adds the convergence diagnostics (per-parameter R-hat, bulk and tail
+    ESS, the optima found, stage timings). Full runs draw ``full_runs_samples`` posterior draws
+    uniformly from all chains.
     """
     from kiribati_tb.calibration import calibration_setup
     from kiribati_tb.scenarios import SCENARIOS
@@ -224,32 +232,65 @@ def run_full_analysis(
     folder.mkdir(parents=True, exist_ok=True)
     setup = calibration_setup(sensitivity_analysis, param_overrides)
     bm = bayesian_model(setup)
+    config = PipelineConfig() if config is None else config
     start = time.time()
-    idata = bm.sample("aies", num_warmup=warmup, num_samples=samples, num_chains=walkers, seed=seed)
+    fallback = bayesian_model(setup, solver=forward_mode_solver())
+    tight = bayesian_model(setup, solver=TIGHT_SOLVER)
+    fit = calibrate(bm, folder, config, fallback=fallback, metric_bm=tight, seed=seed)
     mcmc_time = time.time() - start
+    idata = fit.idata
     idata.to_netcdf(folder / "idata.nc")
-    ids = [s.sc_id for s in SCENARIOS] if scenario_ids is None else list(scenario_ids)
-    start = time.time()
-    runs = run_scenarios(setup, idata, ids, n=full_runs_samples, burn_in=burn_in, seed=seed)
-    runs_time = time.time() - start
-    write_full_runs(
-        runs,
-        folder,
-        times={
-            "mcmc_time": f"{round(mcmc_time)} sec ({walkers} walkers x {warmup + samples})",
-            "full_runs_time": f"{round(runs_time)} sec ({full_runs_samples} draws)",
-        },
-        model_config={
-            "heterogeneous_mixing": setup.config.heterogeneous_mixing,
-            "sensitivity_analysis": sensitivity_analysis,
-            "param_overrides": dict(param_overrides or {}),
-        },
-        analysis_config={
-            "walkers": walkers,
-            "warmup": warmup,
-            "samples": samples,
-            "burn_in": burn_in,
-            "full_runs_samples": full_runs_samples,
-        },
-    )
-    return idata, runs
+    summary = fit.summary()
+    model_config = {
+        "heterogeneous_mixing": setup.config.heterogeneous_mixing,
+        "sensitivity_analysis": sensitivity_analysis,
+        "param_overrides": dict(param_overrides or {}),
+    }
+    analysis_config = {
+        "pipeline": _plain(asdict(config)),
+        "full_runs_samples": full_runs_samples,
+        "diagnostics": summary,
+    }
+    calibration_time = f"{round(mcmc_time)} sec (this call; stages: {summary['seconds']})"
+    runs = None
+    if full_runs_samples > 0:
+        ids = [s.sc_id for s in SCENARIOS] if scenario_ids is None else list(scenario_ids)
+        start = time.time()
+        runs = run_scenarios(setup, idata, ids, n=full_runs_samples, seed=seed)
+        runs_time = time.time() - start
+        write_full_runs(
+            runs,
+            folder,
+            times={
+                "calibration_time": calibration_time,
+                "full_runs_time": f"{round(runs_time)} sec ({full_runs_samples} draws)",
+            },
+            model_config=model_config,
+            analysis_config=analysis_config,
+        )
+    else:
+        with open(folder / "details.yaml", "w") as handle:
+            yaml.dump_all(
+                [{"calibration_time": calibration_time}, model_config, analysis_config],
+                handle,
+                default_flow_style=False,
+            )
+    if not fit.converged:
+        warnings.warn(
+            f"Calibration in {folder} stopped without converging ({summary['decision']}); "
+            "rerun to extend it.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+    return fit, runs
+
+
+def _plain(value: Any) -> Any:
+    """``value`` with tuples and numpy scalars turned into YAML-safe Python types."""
+    if isinstance(value, Mapping):
+        return {k: _plain(v) for k, v in value.items()}
+    if isinstance(value, (list, tuple)):
+        return [_plain(v) for v in value]
+    if isinstance(value, np.generic):
+        return value.item()
+    return value
