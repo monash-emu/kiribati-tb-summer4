@@ -18,7 +18,7 @@ mkdir -p outputs/cluster/logs
 resources() {
     case "$1" in
         nuts_td8 | nuts_td5 | sa) echo "8 48:00:00 46" ;;
-        ess) echo "4 48:00:00 46" ;;
+        ess) echo "2 48:00:00 46" ;;
         *) return 1 ;;
     esac
 }

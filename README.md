@@ -60,9 +60,9 @@ from its best points, a check for separate optima, a Laplace metric at the best 
 dense-mass NUTS (in coordinates that straighten the transmission ridge) in checkpointed
 chunks until split R-hat ≤ 1.01 and bulk and tail ESS ≥ 400 for every parameter. Every stage
 writes to the output folder, so rerunning the same command after a kill resumes it;
-`details.yaml` records the diagnostics. `notebooks/06-fast-calibration.ipynb` checks that it
-recovers a long reference run and compares both with the published posterior
-(`reference/published/`).
+`details.yaml` records the diagnostics. Whether the samplers recover the same posterior is
+settled by four long reference runs on MASSIVE (next section), compared with each other and
+with the published posterior (`reference/published/`) in `notebooks/06-fast-calibration.ipynb`.
 
 summer4 is pinned to `main` at `c9548d5` (after `v0.2.0a5`): the solver backends of its step 29
 let the port choose diffrax's adjoint (forward mode where reverse-mode gradients are NaN), and

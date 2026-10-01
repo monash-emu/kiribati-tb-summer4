@@ -74,6 +74,17 @@ class ToyModel:
         return model
 
 
+class ToyShear:
+    """A coordinate change for ``make_mcmc(shear=)``: NUTS then runs on a potential function."""
+
+    def potential(self, bm: Any) -> Any:
+        def potential(w: dict[str, Any]) -> Any:
+            x, y = w["x"], w["y"]
+            return 0.5 * x**2 + 0.5 * ((y - 0.9 * x) / 0.5) ** 2
+
+        return potential
+
+
 def toy_config(kernel: str) -> PipelineConfig:
     walkers = 8 if kernel == "ess" else 2
     return PipelineConfig(
@@ -90,10 +101,12 @@ def toy_config(kernel: str) -> PipelineConfig:
 
 def run_once(kernel: str, folder: Path, criteria: StopCriteria) -> tuple[Checkpoint, StagedWarmup]:
     bm = ToyModel()
+    shear = ToyShear() if kernel == "nuts_potential" else None
+    kernel = "nuts" if kernel == "nuts_potential" else kernel
     config = replace(toy_config(kernel), criteria=criteria)
 
     def build(n: int, metric: Any, step: float) -> Any:
-        return make_mcmc(bm, config, n, inverse_mass_matrix=metric, step_size=step)
+        return make_mcmc(bm, config, n, inverse_mass_matrix=metric, step_size=step, shear=shear)
 
     staged = StagedWarmup(
         build, folder, rounds=config.warmup_rounds, extra_fields=KERNEL_FIELDS[kernel]
@@ -116,17 +129,18 @@ def run_once(kernel: str, folder: Path, criteria: StopCriteria) -> tuple[Checkpo
     return stop, staged
 
 
-@pytest.mark.parametrize("kernel", ["nuts", "sa", "ess"])
+@pytest.mark.parametrize("kernel", ["nuts", "nuts_potential", "sa", "ess"])
 def test_every_kernel_checkpoints_and_resumes(kernel: str, tmp_path: Path) -> None:
     first, staged = run_once(
         kernel, tmp_path, StopCriteria(ess=1e9, max_samples=40, max_divergence_frac=None)
     )
-    assert staged.done and len(staged.rows) == len(toy_config(kernel).warmup_rounds)
+    base = "nuts" if kernel == "nuts_potential" else kernel
+    assert staged.done and len(staged.rows) == len(toy_config(base).warmup_rounds)
     assert first.progress["draws_per_chain"].tolist() == [20, 40]
     assert first.rows[-1]["decision"] == "max_samples"
     for name in ("idata.nc", "mcmc_state.pkl", "progress.csv", "diagnostics.json", "warmup.pkl"):
         assert (tmp_path / name).exists()
-    if kernel == "nuts":
+    if base == "nuts":
         assert first.rows[-1]["chunk_treedepth_mean"] > 0
         assert 0 < first.rows[-1]["chunk_accept_mean"] <= 1
 

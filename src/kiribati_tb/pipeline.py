@@ -299,10 +299,15 @@ def sample_chunks(
         raise ValueError("sample_chunks needs a warmed-up MCMC (post_warmup_state set).")
     key = random.PRNGKey(int(seed))
     seconds = 0.0
+    # A fresh MCMC given a saved state (a resumed job) still initialises its kernel on the
+    # first run, and a kernel on a potential function needs positions for that; they are
+    # otherwise ignored in favour of the state.
+    init = jax.tree.map(np.asarray, mcmc.post_warmup_state.z)
     while True:
         key, sub = random.split(key)
         start = time.perf_counter()
-        mcmc.run(sub, extra_fields=extra_fields)
+        mcmc.run(sub, extra_fields=extra_fields, init_params=init)
+        init = None
         jax.block_until_ready(mcmc.last_state)
         seconds += time.perf_counter() - start
         mcmc.post_warmup_state = mcmc.last_state

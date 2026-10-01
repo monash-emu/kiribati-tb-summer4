@@ -49,14 +49,16 @@ REFERENCE_ARMS: dict[str, PipelineConfig] = {
         thinning=10,
         criteria=REFERENCE_CRITERIA,
     ),
-    # 64 walkers (over 3x the 19 dimensions) vectorised in one program on one device.
+    # 64 walkers (over 3x the 19 dimensions) vectorised in one program on one device. One
+    # iteration measured ~60 s here (every walker waits for the slowest slice), so warmup (which
+    # only tunes the slice width) is short and each chunk is about 1.5 h.
     "ess": PipelineConfig(
         kernel="ess",
         num_chains=64,
         chain_method="vectorized",
-        cpus=4,
-        warmup_rounds=(1000,),
-        chunk=250,
+        cpus=2,  # one vectorised program used ~1.4 cores here
+        warmup_rounds=(300,),
+        chunk=100,
         criteria=REFERENCE_CRITERIA,
     ),
 }
@@ -68,7 +70,11 @@ SMOKE_DEVICES = 2
 
 
 def reference_config(arm: str, *, smoke: bool = False) -> PipelineConfig:
-    """The arm's settings; ``smoke`` shrinks every stage so the whole path runs in minutes."""
+    """The arm's settings; ``smoke`` shrinks every stage so the whole path runs in minutes.
+
+    Smoke NUTS arms cap the tree depth at 3, so ``nuts_td8`` and ``nuts_td5`` smoke-test the
+    same path; the full arms differ only in ``max_tree_depth``.
+    """
     if arm not in REFERENCE_ARMS:
         raise ValueError(f"Unknown arm {arm!r}; expected one of {sorted(REFERENCE_ARMS)}.")
     config = REFERENCE_ARMS[arm]
@@ -85,6 +91,9 @@ def reference_config(arm: str, *, smoke: bool = False) -> PipelineConfig:
         num_chains=walkers,
         cpus=2 if config.kernel != "ess" else 1,
         warmup_rounds=(6, 6) if config.kernel == "nuts" else (20,),
+        # A smoke run checks the code path, not the geometry: short trajectories keep it to
+        # minutes (a depth-8 tree costs up to 255 gradients, minutes per iteration here).
+        max_tree_depth=min(config.max_tree_depth, 3),
         chunk=4 if config.kernel == "nuts" else 20,
         thinning=1,
         tight_metric=False,
