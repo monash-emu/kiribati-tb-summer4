@@ -54,11 +54,11 @@ one-call convenience built from them.
 Reproduce:
 
 ```bash
-pixi run python scripts/neutra.py --name base --svi-steps 1500 --lr 2e-3 --particles 4 \
-    --chains 4 --warmup-rounds 100,100 --chunk 50
-pixi run python scripts/neutra.py --name baseline_shear --flow none --dense-mass \
-    --chains 4 --warmup-rounds 100,100 --chunk 50
-pixi run python scripts/neutra_reuse.py            # one flow scored under the whole grid
+pixi run python scripts/neutra.py --name base --solver original --svi-steps 1500 --lr 2e-3 \
+    --particles 4 --chains 4 --warmup-rounds 100,100 --chunk 50 --max-divergence-frac 1
+pixi run python scripts/neutra.py --name baseline_shear --solver original --flow none \
+    --dense-mass --chains 4 --warmup-rounds 100,100 --chunk 50 --max-divergence-frac 1
+pixi run python scripts/neutra_reuse.py --solver original   # one flow under the whole grid
 pixi run python scripts/neutra_report.py           # figures and report.json
 ```
 
@@ -71,7 +71,11 @@ The machine was shared and very heavily loaded throughout (load average 20–95 
 Each 4-chain run got about one core in total, so wall times are inflated by a factor of
 roughly 4–10 and are given for the record only. **Compare runs by gradient evaluations.**
 For scale, a reverse-mode gradient costs 0.175 s on an idle core (`outputs/bench`); it took
-0.57 s at the time of this run.
+0.57 s at the time of this run. All runs here use the original's solver, Dopri5 at
+`rtol = atol = 1.4e-4` (now `ORIGINAL_CALIBRATION_SOLVER`), which was the calibration default
+when they started. The branch has since moved to `calibration_solver`, whose gradients are
+about 1.4× cheaper. Per `docs/gradient-performance.md` that changes the cost of each
+gradient, not how many each draw needs.
 
 ### 1. Training the flow
 
@@ -179,30 +183,29 @@ cannot serve it at all.
 
 ## What limits NUTS here
 
-Both coordinate systems converge on the same step size (about 0.1 in whitened units) and the
-same ~55-step trajectories, even though the flow changes the posterior's large-scale shape a
-lot: 35 nats of ELBO. If the cost came from shape (a curved ridge, differing scales,
-correlations), the flow would have shortened the trajectories, so the binding constraint is
-local. Two candidates:
+Both coordinate systems settle on the same step size (about 0.1 in whitened units) and
+similar trajectories, even though the flow changes the posterior's large-scale shape a lot
+(35 nats of ELBO). `docs/gradient-performance.md` (§4, energy error) shows why the step size
+is about 0.1. Along leapfrog trajectories in the Laplace metric, the energy error at step 0.1
+is about 1.2 for every solver, a 1e-8 solve included, and at 0.2 every trajectory blows up.
+So the limit is the posterior's *local* curvature, not solver noise. It varies across the
+posterior: the curved ridge, and the mass against the prior bounds where the logit map
+stretches.
 
-- **Solver noise in the gradient.** The adaptive Dopri5 solve at `rtol = atol = 1.4e-4`
-  makes the log density piecewise smooth: accepted step counts change discretely with the
-  parameters. A leapfrog step then sees energy errors that do not shrink smoothly with the
-  step size. A separate investigation on `feat/k4b-fast-calibration`
-  (`scripts/bench/energy_error.py`) is measuring the energy error per leapfrog step against
-  the solver settings. If it finds that the error is noise, the fix is a tighter or
-  fixed-grid solve, not a new coordinate system.
-- **Steep walls.** Divergences (7–18%) were not caused by NaN gradients or failed solves: 0
-  of 80 flow draws (and 0 of 40 at 1.5× the base scale) had either. They come from steep
-  regions inside trajectories, which a flow fitted by reverse KL is least likely to have
-  learned.
+A flow could in principle flatten that, but this one did not. The IAF fitted by reverse KL
+matches the bulk (the ELBO), not the regions of high curvature, and its importance `k_hat`
+near 1 says it under-covers part of the posterior. NUTS in the warped space inherits the
+curvature, plus the distortion where the flow squeezes the tail: in the sampling chunks one
+warped chain stuck with 86% divergences. Divergences were not caused by NaN gradients or
+failed solves: 0 of 80 flow draws, and 0 of 40 at 1.5× the base scale, had either.
 
 ## Recommendation
 
 **Do not use NeuTra for this model.** Keep the pipeline's sheared, Laplace-started
 dense-metric NUTS. Training the flow is cheap and robust, so it is not the obstacle, but the
-warped NUTS is no faster per draw and diverges more. The time is better spent on whatever
-limits the step size (the solver investigation above), which would help every arm.
+warped NUTS is no faster per draw and diverges more. A flow strong enough to change the local curvature (deeper or block-neural flows, or a
+mass-covering objective) is the only version worth trying, and the evidence here does not
+suggest it would repay its cost.
 
 `kiribati_tb.neutra` stays as a tested, checkpointed arm (`scripts/neutra.py`, with the same
 `--chains/--chunk/--max-hours` flags as `scripts/calibrate.py`), so the experiment can be
@@ -211,9 +214,13 @@ difference.
 
 ## Also found
 
-- **S12:** at regression rates 2.5 and 3.0 every reverse-mode gradient is NaN even at the
-  base optimum, so `BayesianModel.potential_fn` cannot be built and the cluster grid's four
-  rate-3.0 tasks cannot calibrate as written (`docs/summer4-workarounds.md`, S12).
+- **S12:** with the original's Dopri5 setting, every reverse-mode gradient is NaN at
+  regression rates 2.5 and 3.0, even at the base optimum, so `BayesianModel.potential_fn`
+  cannot be built there (`docs/summer4-workarounds.md`, S12). The current `calibration_solver`
+  (Bosh3 + PI + `jump_ts`, S10) gives finite gradients there, so the grid's rate-3.0 tasks
+  are fine on this branch. Do not go back to the original solver for them.
+- **`tpt_60` needs no calibration of its own:** its posterior is the base case's (see the
+  reuse table).
 - **The PSIS sign bug** in `pipeline.laplace_psis` (above), fixed on this branch.
 
 ## What was not verified

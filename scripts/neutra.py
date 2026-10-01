@@ -33,6 +33,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--analysis", default=None)
     parser.add_argument("--override", action="append", default=[], metavar="NAME=VALUE")
     parser.add_argument("--no-shear", action="store_true")
+    parser.add_argument(
+        "--solver",
+        default="calibration",
+        choices=["calibration", "original"],
+        help="calibration_solver (Bosh3, default) or the original's Dopri5 (docs/neutra.md runs)",
+    )
     parser.add_argument("--flow", default="iaf", choices=["iaf", "bnaf", "none"])
     parser.add_argument("--num-flows", type=int, default=2)
     parser.add_argument("--hidden", default="38,38")
@@ -76,7 +82,11 @@ def main() -> None:
 
     from summer4.epi.calibration import workflow as wf
 
-    from kiribati_tb.calibration import bayesian_model, calibration_setup
+    from kiribati_tb.calibration import (
+        ORIGINAL_CALIBRATION_SOLVER,
+        bayesian_model,
+        calibration_setup,
+    )
     from kiribati_tb.neutra import (
         NeutraConfig,
         WhitenedCoordinates,
@@ -88,7 +98,8 @@ def main() -> None:
     from kiribati_tb.pipeline import StopCriteria, ridge_shear
 
     overrides = {k: float(v) for k, v in (item.split("=", 1) for item in args.override)}
-    bm = bayesian_model(calibration_setup(args.analysis, overrides))
+    solver = ORIGINAL_CALIBRATION_SOLVER if args.solver == "original" else None
+    bm = bayesian_model(calibration_setup(args.analysis, overrides), solver=solver)
     folder = REPO_ROOT / "outputs" / "neutra" / args.name
     init_flow = None
     if (folder / "coords.json").exists():

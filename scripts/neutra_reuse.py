@@ -46,6 +46,7 @@ def main() -> None:
     parser.add_argument("--flow-run", default="outputs/neutra/base")
     parser.add_argument("--draws", type=int, default=128)
     parser.add_argument("--only", default=None, help="comma-separated labels")
+    parser.add_argument("--solver", default="calibration", choices=["calibration", "original"])
     args = parser.parse_args()
 
     import numpyro  # noqa: F401
@@ -61,10 +62,11 @@ def main() -> None:
         load_params,
         make_guide,
     )
-    from kiribati_tb.calibration import forward_mode_solver
+    from kiribati_tb.calibration import ORIGINAL_CALIBRATION_SOLVER, forward_mode_solver
     from kiribati_tb.paths import REPO_ROOT
     from kiribati_tb.pipeline import forward_log_density
 
+    original = ORIGINAL_CALIBRATION_SOLVER if args.solver == "original" else None
     source = REPO_ROOT / args.flow_run
     coords = WhitenedCoordinates.from_json(json.loads((source / "coords.json").read_text()))
     saved = json.loads((source / "args.json").read_text())
@@ -86,14 +88,14 @@ def main() -> None:
             continue
         start = time.perf_counter()
         setup = calibration_setup(analysis, overrides)
-        bm = bayesian_model(setup, solver=forward_mode_solver())
+        bm = bayesian_model(setup, solver=forward_mode_solver(original))
         if tuple(sorted(bm.prior_names())) != coords.sites:
             print(f"[reuse] {label}: different sites, skipped", flush=True)
             continue
         # Forward evaluations only. The model is built with diffrax's forward-mode adjoint so
-        # numpyro's start-up check takes a forward-mode gradient: at regression rates >= 2.5
-        # every reverse-mode gradient is NaN and BayesianModel.potential_fn cannot be built
-        # (docs/summer4-workarounds.md, S12).
+        # numpyro's start-up check takes a forward-mode gradient: with the original solver every
+        # reverse-mode gradient is NaN at regression rates >= 2.5 and BayesianModel.potential_fn
+        # cannot be built there (docs/summer4-workarounds.md, S12).
         density = forward_log_density(bm)
         potential = coords.pull_back(lambda z: -density(z))
         # The guide only needs the site's shape; its set-up trace (a reverse-mode check) runs
