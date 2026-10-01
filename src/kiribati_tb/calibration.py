@@ -38,11 +38,12 @@ class TargetSpec:
     output: str
     observations: Mapping[float, float]
     tol_pct: float = 20.0
+    aggregate: str = "mean"
 
     def target(self) -> Target:
         years = np.asarray(sorted(self.observations), dtype=float)
         values = np.asarray([self.observations[y] for y in years], dtype=float)
-        likelihood = NormalLikelihood.from_tolerance(values, self.tol_pct)
+        likelihood = NormalLikelihood.from_tolerance(values, self.tol_pct, aggregate=self.aggregate)
         return Target(key=self.output, times=years, values=values, likelihood=likelihood)
 
 
@@ -129,6 +130,8 @@ class CalibrationSetup:
 def calibration_setup(
     sensitivity_analysis: str | None = None,
     param_overrides: Mapping[str, float] | None = None,
+    *,
+    aggregate: str = "mean",
 ) -> CalibrationSetup:
     """The base-case calibration, or one of the original's sensitivity analyses.
 
@@ -137,6 +140,11 @@ def calibration_setup(
     target and uses one mixing pool. ``param_overrides`` replaces fixed values first, as the
     original's cluster grid does (``clinical_regression_rate``, ``infectiousness_loss_rate``,
     ``rel_sus_unreachable``); it can trigger the ``infectiousness_gain_rate`` narrowing rule.
+
+    ``aggregate`` is how a target's log-densities over its years combine. The code that
+    produced the published posterior (estival 0.6) takes the ``"mean"``; the paper's methods
+    appendix (§9.2) writes a sum. Only notifications has more than one year, so ``"sum"``
+    weights the notification term by its number of years.
     """
     params = dict(read_parameter_sheet().constants) | dict(param_overrides or {})
     config = ModelConfig()
@@ -155,7 +163,7 @@ def calibration_setup(
     priors = calibration_priors(params)
     if not config.heterogeneous_mixing:
         priors = [p for p in priors if p.name not in MIXING_PRIORS]
-    targets = [s.target() for s in specs]
+    targets = [replace(s, aggregate=aggregate).target() for s in specs]
     if with_distance:
         targets.append(mixing_distance_target())
     return CalibrationSetup(config, params, priors, targets)

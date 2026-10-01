@@ -2,8 +2,9 @@
 
 Arms are posterior files; each gets per-parameter quantiles with Monte Carlo standard errors
 and, unless ``--no-scenarios``, projections of ``--draws`` posterior draws through the
-baseline and the screening scenarios. Everything lands in ``outputs/compare/`` for
-``notebooks/06-fast-calibration.ipynb``:
+baseline and the screening scenarios. Each arm is cached under ``outputs/compare/arms/<name>``
+and recomputed only when its file changes (or with ``--force``); the combined tables land in
+``outputs/compare/`` for ``notebooks/06-fast-calibration.ipynb``:
 
 - ``quantiles.parquet``: arm, parameter, quantile, value, mcse, ess_bulk, sd;
 - ``projections.parquet``: arm, draw, scenario, metric, value (per-draw headline metrics);
@@ -22,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import time
 from pathlib import Path
 from typing import Any
 
@@ -31,7 +33,7 @@ import numpy as np
 import pandas as pd
 
 from kiribati_tb.analysis import QUANTILES, run_scenarios
-from kiribati_tb.calibration import bayesian_model, calibration_setup
+from kiribati_tb.calibration import calibration_setup
 from kiribati_tb.paths import REPO_ROOT
 
 OUT = REPO_ROOT / "outputs" / "compare"
@@ -139,6 +141,7 @@ def main() -> None:
     parser.add_argument("--published-draws", type=int, default=2000)
     parser.add_argument("--no-scenarios", action="store_true")
     parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--force", action="store_true", help="recompute cached arms")
     args = parser.parse_args()
     arms = dict(DEFAULT_ARMS)
     for item in args.arm:
@@ -148,32 +151,46 @@ def main() -> None:
     arms = {k: v for k, v in arms.items() if v.exists()}
     OUT.mkdir(parents=True, exist_ok=True)
     setup = calibration_setup()
-    bayesian_model(setup)  # fail early if the setup does not build
-    q_rows: list[dict[str, Any]] = []
-    p_rows: list[dict[str, Any]] = []
-    meta: dict[str, Any] = {}
+    meta_path = OUT / "arms.json"
+    meta: dict[str, Any] = json.loads(meta_path.read_text()) if meta_path.exists() else {}
     for name, path in arms.items():
+        cache = OUT / "arms" / name
+        stamp = path.stat().st_mtime
+        if not args.force and meta.get(name, {}).get("mtime") == stamp and cache.exists():
+            print(f"{name}: cached", flush=True)
+            continue
+        cache.mkdir(parents=True, exist_ok=True)
         post = load_posterior(name, path)
-        q_rows += quantile_rows(name, post)
+        pd.DataFrame(quantile_rows(name, post)).to_parquet(cache / "quantiles.parquet")
         n = args.published_draws if name == "published" else args.draws
         seed = PUBLISHED_SEED if name == "published" else args.seed
-        meta[name] = {
+        info = {
             "path": str(path.relative_to(REPO_ROOT)),
+            "mtime": stamp,
             "chains": int(post.sizes["chain"]),
             "draws_per_chain": int(post.sizes["draw"]),
             "burn_in_dropped": PUBLISHED_BURN_IN if name == "published" else 0,
             "projected_draws": n,
             "projection_seed": seed,
         }
-        print(name, meta[name], flush=True)
+        print(name, info, flush=True)
         if not args.no_scenarios:
             idata = az.from_dict({"posterior": {k: post[k].values for k in post.data_vars}})
+            start = time.time()
             runs = run_scenarios(setup, idata, list(SCENARIOS), n=n, seed=seed)
-            p_rows += projection_rows(name, runs)
-    pd.DataFrame(q_rows).to_parquet(OUT / "quantiles.parquet")
-    if p_rows:
-        pd.DataFrame(p_rows).to_parquet(OUT / "projections.parquet")
-    (OUT / "arms.json").write_text(json.dumps(meta, indent=2))
+            frame = pd.DataFrame(projection_rows(name, runs))
+            frame.to_parquet(cache / "projections.parquet")
+            info["projection_seconds"] = round(time.time() - start)
+        meta[name] = info
+        meta_path.write_text(json.dumps(meta, indent=2))
+    for kind in ("quantiles", "projections"):
+        parts = [
+            pd.read_parquet(f)
+            for f in sorted((OUT / "arms").glob(f"*/{kind}.parquet"))
+            if f.parent.name in meta
+        ]
+        if parts:
+            pd.concat(parts, ignore_index=True).to_parquet(OUT / f"{kind}.parquet")
 
 
 if __name__ == "__main__":

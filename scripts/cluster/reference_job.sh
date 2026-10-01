@@ -20,5 +20,5 @@
 
 cd <repo>
 export OMP_NUM_THREADS=1
-pixi run python scripts/calibrate.py --name reference --chains 8 --ess 1600 --warmup 600 \
-    --jitter 0.5 --seed 101 --max-hours 44 --full-runs 0
+pixi run python scripts/calibrate.py --name reference --chains 8 --ess 1600 \
+    --warmup-rounds 200,200,400,400,800 --jitter 0.5 --seed 101 --max-hours 44 --full-runs 0

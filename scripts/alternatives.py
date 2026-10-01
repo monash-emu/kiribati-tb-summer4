@@ -55,8 +55,15 @@ def run_laplace(bm: object, folder: Path, n: int, seed: int) -> None:
     az.from_dict({"posterior": {k: np.asarray(v)[None, :] for k, v in params.items()}}).to_netcdf(
         out / "idata.nc"
     )
-    record = {"k_hat": fit.k_hat, "ess": fit.ess, "n": n, "seconds": fit.seconds}
+    record = {
+        "k_hat": fit.k_hat,
+        "ess": fit.ess,
+        "n": n,
+        "failed_solves": fit.failed,
+        "seconds": fit.seconds,
+    }
     (out / "summary.json").write_text(json.dumps(record, indent=2))
+    np.save(out / "log_ratio.npy", fit.log_ratio)
     print(json.dumps(record), flush=True)
 
 

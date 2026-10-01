@@ -9,7 +9,8 @@ The pipeline is:
 3. **Mode check**: :func:`distinct_optima` groups the optimised points, so a second mode is
    reported rather than silently mixed into (or left out of) the chains.
 4. **NUTS**: chains start from the optima within :data:`SEED_WINDOW` nats of the best, warm up
-   with ``wf.warmup_until`` (dense mass matrix), then sample in chunks with
+   in checkpointed rounds (:class:`StagedWarmup`, dense mass matrix from a Laplace start),
+   then sample in chunks with
    ``wf.sample_until``. The stop callable is a :class:`Checkpoint`: after every chunk it writes
    the draws (``idata.nc``) and the sampler state to disk, and stops on rank-normalised split
    R-hat and bulk/tail ESS over every draw so far, so a killed job resumes where it stopped.
@@ -208,9 +209,11 @@ def nuts_factory(
     target_accept_prob: float = 0.8,
     max_tree_depth: int = 8,
     inverse_mass_matrix: np.ndarray | None = None,
+    step_size: float = 1.0,
     shear: RidgeShear | None = None,
+    progress_bar: bool = False,
 ) -> Callable[[int], Any]:
-    """``num_warmup -> numpyro MCMC`` with NUTS on ``bm``: what ``wf.warmup_until`` takes.
+    """``num_warmup -> numpyro MCMC`` with NUTS on ``bm`` (the factory ``wf.warmup_until`` takes).
 
     A dense mass matrix absorbs the posterior's linear correlations (``raw_transmission_rate``
     against ``infection_pop_scale`` is about -0.7). ``chain_method="parallel"`` needs one XLA
@@ -241,6 +244,7 @@ def nuts_factory(
             inverse_mass_matrix=(
                 None if inverse_mass_matrix is None else jnp.asarray(inverse_mass_matrix)
             ),
+            step_size=step_size,
         )
         return MCMC(
             kernel,
@@ -248,7 +252,7 @@ def nuts_factory(
             num_samples=int(chunk),
             num_chains=int(num_chains),
             chain_method=chain_method,
-            progress_bar=False,
+            progress_bar=progress_bar,
         )
 
     return make
@@ -435,21 +439,141 @@ def _atomic(path: Path, write: Callable[[Path], Any]) -> None:
     tmp.replace(path)
 
 
-def save_warmup(folder: Path, warm: Any) -> None:
-    """Write a finished ``wf.warmup_until`` run: the warmed-up state and its progress."""
-    folder.mkdir(parents=True, exist_ok=True)
-    state = jax.device_get(warm.mcmc.post_warmup_state)
-    _atomic(folder / "warmup_state.pkl", lambda p: p.write_bytes(pickle.dumps(state)))
-    _atomic(folder / "warmup.csv", lambda p: warm.progress.to_csv(p))
+@dataclass
+class StagedWarmup:
+    """NUTS warmup in short rounds, each starting from the last round's metric and positions.
+
+    numpyro adapts the step size and mass matrix inside one ``MCMC.warmup`` call whose length
+    is fixed in advance, and reports nothing until it ends. Here each round is a fresh
+    ``MCMC`` from ``build(num_warmup, inverse_mass_matrix, step_size)`` started where the
+    previous round left off, with the chains' adapted mass matrices pooled into the next
+    round's starting metric (``wf.warmup_until`` carries positions only and restarts from the
+    identity metric; see docs/summer4-workarounds.md, S7). After every round a progress line
+    is printed and the state is saved to ``folder``, so a killed job resumes at the next
+    round. Rounds stop when ``check`` (default ``wf.WarmupRule()``) passes on the second half
+    of a round's draws, or after the last entry of ``rounds``.
+    """
+
+    build: Callable[[int, np.ndarray | None, float], Any]
+    folder: Path
+    rounds: tuple[int, ...] = (100, 100, 200, 200, 400)
+    check: Callable[[Mapping[str, Any]], Any] = field(default_factory=lambda: wf.WarmupRule())
+    max_tree_depth: int = 8
+    rows: list[dict[str, Any]] = field(default_factory=list)
+    mcmc: Any = None
+    done: bool = False
+
+    def __post_init__(self) -> None:
+        self.folder = Path(self.folder)
+        self.folder.mkdir(parents=True, exist_ok=True)
+
+    def run(
+        self,
+        init_params: Mapping[str, Any] | None,
+        metric: np.ndarray | None,
+        *,
+        step_size: float = 1.0,
+        seed: int = 0,
+    ) -> Any:
+        """Warm up (or resume warming up); return the warmed-up ``MCMC``."""
+        from jax import random
+
+        saved = self._load()
+        if saved is not None:
+            init_params, metric, step_size, state = saved
+            if self.done:
+                self.mcmc = self.build(self.rows[-1]["num_warmup"], metric, step_size)
+                self.mcmc.post_warmup_state = state
+                return self.mcmc
+        key = random.PRNGKey(seed + 7919 * len(self.rows))
+        while not self.done:
+            k = len(self.rows)
+            n = self.rounds[min(k, len(self.rounds) - 1)]
+            mcmc = self.build(n, metric, step_size)
+            start = time.perf_counter()
+            key, sub = random.split(key)
+            mcmc.warmup(
+                sub,
+                init_params=init_params,
+                collect_warmup=True,
+                extra_fields=("num_steps", "accept_prob", "diverging"),
+            )
+            seconds = time.perf_counter() - start
+            row = self._row(mcmc, k + 1, n, seconds)
+            state = mcmc.post_warmup_state
+            failed = tuple(self.check(row))
+            row["failed"] = ", ".join(failed) if failed else None
+            self.done = not failed or k + 1 >= len(self.rounds)
+            row["done"] = self.done
+            self.rows.append(row)
+            init_params = {name: np.asarray(v) for name, v in state.z.items()}
+            metric = _pooled_metric(state.adapt_state.inverse_mass_matrix)
+            step_size = float(np.median(np.asarray(state.adapt_state.step_size)))
+            self._save(init_params, metric, step_size, state)
+            print(f"[warmup] {json.dumps(row)}", flush=True)
+            self.mcmc = mcmc
+        return self.mcmc
+
+    def _row(self, mcmc: Any, k: int, n: int, seconds: float) -> dict[str, Any]:
+        draws = {name: np.asarray(v) for name, v in mcmc.get_samples(group_by_chain=True).items()}
+        extra = {
+            name: np.asarray(v)[:, n // 2 :]
+            for name, v in mcmc.get_extra_fields(group_by_chain=True).items()
+        }
+        half = {name: v[:, n // 2 :] for name, v in draws.items()}
+        steps = np.atleast_1d(np.asarray(mcmc.post_warmup_state.adapt_state.step_size))
+        sampler = mcmc.sampler
+        return {
+            "round": k,
+            "num_warmup": n,
+            "seconds": round(seconds, 1),
+            "seconds_per_iteration": round(seconds / n, 2),
+            "leapfrog_mean": float(np.mean(extra["num_steps"])),
+            "rhat_max": float(diagnostics(half)["rhat"].max()),
+            "step_size_min": float(steps.min()),
+            "step_size_max": float(steps.max()),
+            "step_size_ratio": float(steps.max() / steps.min()),
+            "accept_mean": float(np.mean(extra["accept_prob"])),
+            "target_accept_prob": float(getattr(sampler, "_target_accept_prob", 0.8)),
+            "divergence_frac": float(np.mean(extra["diverging"])),
+            "treedepth_frac": float(np.mean(extra["num_steps"] >= 2**self.max_tree_depth - 1)),
+        }
+
+    def _save(self, z: Any, metric: np.ndarray, step_size: float, state: Any) -> None:
+        blob = {
+            "z": z,
+            "metric": metric,
+            "step_size": step_size,
+            "state": jax.device_get(state),
+            "rows": self.rows,
+            "done": self.done,
+        }
+        _atomic(self.folder / "warmup.pkl", lambda p: p.write_bytes(pickle.dumps(blob)))
+        _atomic(self.folder / "warmup.csv", lambda p: self.progress.to_csv(p))
+
+    def _load(self) -> tuple[Any, np.ndarray, float, Any] | None:
+        path = self.folder / "warmup.pkl"
+        if not path.exists():
+            return None
+        blob = pickle.loads(path.read_bytes())
+        self.rows, self.done = list(blob["rows"]), bool(blob["done"])
+        state = jax.tree.map(jnp.asarray, blob["state"])
+        return blob["z"], blob["metric"], float(blob["step_size"]), state
+
+    @property
+    def progress(self) -> pd.DataFrame:
+        return pd.DataFrame(self.rows).set_index("round")
 
 
-def load_warmup(folder: Path, mcmc: Any) -> bool:
-    """Give ``mcmc`` a saved warmed-up state; ``False`` if none was saved."""
-    path = folder / "warmup_state.pkl"
-    if not path.exists():
-        return False
-    mcmc.post_warmup_state = jax.tree.map(jnp.asarray, pickle.loads(path.read_bytes()))
-    return True
+def _pooled_metric(inverse_mass_matrix: Any) -> np.ndarray:
+    """One dense metric from numpyro's per-chain adapted ``inverse_mass_matrix``."""
+    blocks = inverse_mass_matrix
+    if isinstance(blocks, Mapping):
+        if len(blocks) != 1:
+            raise ValueError("Expected one dense mass-matrix block over every site.")
+        blocks = next(iter(blocks.values()))
+    arr = np.asarray(blocks)
+    return arr.mean(axis=0) if arr.ndim == 3 else arr
 
 
 # --------------------------------------------------------------------------------------------
@@ -471,6 +595,8 @@ class LaplacePSIS:
     k_hat: float
     ess: float
     seconds: float
+    failed: int = 0
+    log_ratio: np.ndarray | None = None  # raw log p - log q, before smoothing
 
     def resample(self, n: int, *, seed: int = 0) -> dict[str, np.ndarray]:
         """``n`` unconstrained draws resampled by weight (with replacement), site dict."""
@@ -567,11 +693,23 @@ def laplace_psis(
         )
     )
     log_p = np.asarray(score(jnp.asarray(draws)))
-    log_p = np.where(np.isfinite(log_p) & (log_p > -1e29), log_p, -np.inf)
-    lw, k_hat = array_stats.psislw(log_p - log_q)
-    lw = np.asarray(lw) - np.logaddexp.reduce(np.asarray(lw))
-    ess = float(1.0 / np.sum(np.exp(2 * lw)))
-    return LaplacePSIS(sites, draws, lw, float(k_hat), ess, time.perf_counter() - start)
+    ok = np.isfinite(log_p) & (log_p > -1e29)  # a failed solve has zero posterior density
+    lw = np.full(n, -np.inf)
+    ratio = log_p[ok] - log_q[ok]
+    smoothed, k_hat = array_stats.psislw(ratio - np.max(ratio))
+    lw[ok] = np.asarray(smoothed)
+    lw = lw - np.logaddexp.reduce(lw[ok])
+    ess = float(1.0 / np.sum(np.exp(2 * lw[ok])))
+    return LaplacePSIS(
+        sites,
+        draws,
+        lw,
+        float(k_hat),
+        ess,
+        time.perf_counter() - start,
+        int(np.sum(~ok)),
+        log_p - log_q,
+    )
 
 
 # --------------------------------------------------------------------------------------------
@@ -589,14 +727,14 @@ class PipelineConfig:
     workers: int = 8
     num_chains: int = 8
     chain_method: str = "parallel"
-    num_warmup: int = 400
-    max_warmup: int = 800
+    warmup_rounds: tuple[int, ...] = (100, 100, 200, 200, 400)
     chunk: int = 200
     jitter: float = 0.05
     criteria: StopCriteria = field(default_factory=StopCriteria)
     target_accept_prob: float = 0.8
     max_tree_depth: int = 8
     shear: bool = True
+    progress_bar: bool = True
 
 
 @dataclass
@@ -665,13 +803,15 @@ def calibrate(
         modes = distinct_optima(optima)
         _, cov = laplace_covariance(metric_bm, mode)  # mode: optima.best(1) as a dict
         shear = ridge_shear(bm, mode, cov)
-        make = nuts_factory(bm, num_chains=8, chunk=200, shear=shear,
-                            inverse_mass_matrix=sheared_covariance(shear, mode, cov))
+        build = lambda n, metric, step: nuts_factory(
+            bm, num_chains=8, chunk=200, shear=shear, inverse_mass_matrix=metric,
+            step_size=step)(n)
         init = shear.forward(seeds(optima).init_params(8, jitter=0.05))
-        warm = wf.warmup_until(make, 400, wf.WarmupRule(), init_params=init, max_warmup=800)
-        stop = Checkpoint(warm.mcmc, folder / "nuts", StopCriteria(),
+        mcmc = StagedWarmup(build, folder / "nuts").run(
+            init, sheared_covariance(shear, mode, cov))
+        stop = Checkpoint(mcmc, folder / "nuts", StopCriteria(),
                           postprocess=lambda w: bm.constrain(shear.inverse(w)))
-        wf.sample_until(warm.mcmc, stop)
+        wf.sample_until(mcmc, stop)
     """
     folder = Path(folder)
     folder.mkdir(parents=True, exist_ok=True)
@@ -728,36 +868,37 @@ def calibrate(
             params = bm.constrain(shear.inverse({k: jnp.asarray(v) for k, v in chunk.items()}))
             return {k: np.asarray(v) for k, v in params.items()}
 
-    make = nuts_factory(
-        bm,
-        num_chains=config.num_chains,
-        chunk=config.chunk,
-        chain_method=config.chain_method,
-        target_accept_prob=config.target_accept_prob,
-        max_tree_depth=config.max_tree_depth,
-        inverse_mass_matrix=metric,
-        shear=shear,
-    )
     nuts_dir = folder / "nuts"
-    mcmc = make(config.num_warmup)
-    checkpoint = Checkpoint.resume(nuts_dir, mcmc, config.criteria, postprocess)
-    if checkpoint is None:
-        if not load_warmup(nuts_dir, mcmc):
-            start = time.perf_counter()
-            init = seeds(optima).init_params(config.num_chains, jitter=config.jitter, seed=seed)
-            if shear is not None:
-                init = {k: np.asarray(v) for k, v in shear.forward(init).items()}
-            warm = wf.warmup_until(
-                make,
-                config.num_warmup,
-                wf.WarmupRule(),
-                init_params=init,
-                seed=seed,
-                max_warmup=config.max_warmup,
-            )
-            save_warmup(nuts_dir, warm)
-            mcmc = warm.mcmc
-            record("warmup", start)
+
+    def build(num_warmup: int, inverse_mass_matrix: Any, step_size: float) -> Any:
+        return nuts_factory(
+            bm,
+            num_chains=config.num_chains,
+            chunk=config.chunk,
+            chain_method=config.chain_method,
+            target_accept_prob=config.target_accept_prob,
+            max_tree_depth=config.max_tree_depth,
+            inverse_mass_matrix=inverse_mass_matrix,
+            step_size=step_size,
+            shear=shear,
+            progress_bar=config.progress_bar,
+        )(num_warmup)
+
+    staged = StagedWarmup(
+        build, nuts_dir, rounds=config.warmup_rounds, max_tree_depth=config.max_tree_depth
+    )
+    probe = build(config.warmup_rounds[0], metric, 1.0)
+    checkpoint = Checkpoint.resume(nuts_dir, probe, config.criteria, postprocess)
+    if checkpoint is not None:
+        mcmc = probe
+        staged._load()
+    else:
+        start = time.perf_counter()
+        init = seeds(optima).init_params(config.num_chains, jitter=config.jitter, seed=seed)
+        if shear is not None:
+            init = {k: np.asarray(v) for k, v in shear.forward(init).items()}
+        mcmc = staged.run(init, metric, seed=seed)
+        record("warmup", start)
         checkpoint = Checkpoint(mcmc, nuts_dir, config.criteria, postprocess=postprocess)
     start = time.perf_counter()
     last = checkpoint.rows[-1].get("decision") if checkpoint.rows else None
@@ -766,8 +907,7 @@ def calibrate(
             checkpoint.rows[-1]["decision"] = None
         wf.sample_until(mcmc, checkpoint, seed=seed + 1 + len(checkpoint.rows))
     record("sample", start)
-    warmup = pd.read_csv(nuts_dir / "warmup.csv")
-    return Calibration(folder, optima, modes, warmup, checkpoint, seconds)
+    return Calibration(folder, optima, modes, staged.progress, checkpoint, seconds)
 
 
 # --------------------------------------------------------------------------------------------

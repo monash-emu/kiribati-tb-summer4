@@ -21,6 +21,8 @@ black = "*"
 # 0.7.2 is the newest release where parallel chains work without a flag.
 jax = "==0.7.2"
 jaxlib = "==0.7.2"
+# summer4 main at c9548d5 (after v0.2.0a5): Diffrax solver backends (step 29) let the port pick
+# the forward-mode adjoint, and sample/find_map/optimize return run objects (step 30). K4b.
 summer4 = { git = "https://github.com/monash-emu/summer4.git", rev = "c9548d57dc15e12e5017c117918bb7f1bd0165eb", extras = ["calibration", "pandas", "frames"] }
 arviz = "*"
 h5netcdf = "*"

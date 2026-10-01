@@ -217,6 +217,7 @@ def run_full_analysis(
     full_runs_samples: int = 1000,
     seed: int = 0,
     scenario_ids: Sequence[str] | None = None,
+    aggregate: str = "mean",
 ) -> Any:
     """Calibrate with :func:`kiribati_tb.pipeline.calibrate`, then run and write the scenarios.
 
@@ -230,7 +231,7 @@ def run_full_analysis(
     from kiribati_tb.scenarios import SCENARIOS
 
     folder.mkdir(parents=True, exist_ok=True)
-    setup = calibration_setup(sensitivity_analysis, param_overrides)
+    setup = calibration_setup(sensitivity_analysis, param_overrides, aggregate=aggregate)
     bm = bayesian_model(setup)
     config = PipelineConfig() if config is None else config
     start = time.time()
@@ -245,6 +246,7 @@ def run_full_analysis(
         "heterogeneous_mixing": setup.config.heterogeneous_mixing,
         "sensitivity_analysis": sensitivity_analysis,
         "param_overrides": dict(param_overrides or {}),
+        "likelihood_aggregate": aggregate,
     }
     analysis_config = {
         "pipeline": _plain(asdict(config)),

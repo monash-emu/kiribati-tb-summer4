@@ -48,13 +48,36 @@ pixi run -e reference golden    # regenerate goldens from the original model (~1
 
 pixi run find-map               # MAP fit with optax (replaces the nevergrad notebook)
 pixi run synthetic-recovery     # K4 acceptance: recover known parameters
-pixi run calibrate              # AIES calibration + scenario full runs, original file formats
+pixi run calibrate              # fast calibration + scenario full runs, original file formats
 pixi run notebook               # the phase gate notebooks
 ```
 
-Cluster runs: `scripts/cluster/` holds the array-job drivers for the published analyses (the
-4×4 grid of regression rate and unreachable susceptibility, and the three sensitivity
-analyses) with sbatch templates that run in this repository's pixi environment.
+## Calibration
+
+The posterior is the original's (same priors, targets and likelihood); the sampler is not.
+`pixi run calibrate` runs `kiribati_tb.pipeline.calibrate`: a Latin-hypercube design, L-BFGS
+from its best points, a check for separate optima, a Laplace metric at the best one, then
+dense-mass NUTS (in coordinates that straighten the transmission ridge) in checkpointed
+chunks until split R-hat ≤ 1.01 and bulk and tail ESS ≥ 400 for every parameter. Every stage
+writes to the output folder, so rerunning the same command after a kill resumes it;
+`details.yaml` records the diagnostics. `notebooks/06-fast-calibration.ipynb` checks that it
+recovers a long reference run and compares both with the published posterior
+(`reference/published/`).
+
+summer4 is pinned to `main` at `c9548d5` (after `v0.2.0a5`): the solver backends of its step 29
+let the port choose diffrax's adjoint (forward mode where reverse-mode gradients are NaN), and
+step 30's run objects are what `wf.sample_until` and `wf.optimize` return.
+
+## Cluster runs
+
+`scripts/cluster/` holds the array-job drivers for the published analyses (the 4×4 grid of
+regression rate and unreachable susceptibility, `massiverun.py`, and the three sensitivity
+analyses, `massiverun_sas.py`) and the base-case reference posterior (`reference_job.sh`), with
+sbatch templates that run in this repository's pixi environment. Replace `<account>` and
+`<repo>` in the templates, run `pixi install` once on a login node, then submit from the
+repository root with `scripts/cluster/submit.sh <template>`, which creates
+`outputs/cluster/logs/` first (SLURM does not). Each task writes to
+`outputs/cluster/<analysis>/task_<i>/` and resumes from its checkpoints when resubmitted.
 
 ## Licence
 

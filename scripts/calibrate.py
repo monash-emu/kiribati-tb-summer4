@@ -16,8 +16,8 @@ set up here before JAX is imported.
 The reference posterior the fast pipeline is checked against is the same pipeline run longer,
 from more dispersed starts, with a different seed, to four times the ESS::
 
-    pixi run calibrate --name reference --ess 1600 --warmup 600 --jitter 0.5 --seed 101 \
-        --full-runs 0
+    pixi run calibrate --name reference --ess 1600 --warmup-rounds 200,200,400,400,800 \
+        --jitter 0.5 --seed 101 --full-runs 0
 """
 
 from __future__ import annotations
@@ -34,7 +34,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--name", default=None, help="output folder name")
     parser.add_argument("--chains", type=int, default=8)
     parser.add_argument("--chain-method", default="parallel", choices=["parallel", "vectorized"])
-    parser.add_argument("--warmup", type=int, default=400, help="first warmup round length")
+    parser.add_argument(
+        "--warmup-rounds",
+        default="100,100,200,200,400",
+        help="warmup round lengths; rounds stop early once wf.WarmupRule passes",
+    )
     parser.add_argument("--chunk", type=int, default=200, help="draws per chain per checkpoint")
     parser.add_argument("--rhat", type=float, default=1.01)
     parser.add_argument("--ess", type=float, default=400.0, help="bulk and tail ESS target")
@@ -42,7 +46,19 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--max-hours", type=float, default=None, help="sampling budget")
     parser.add_argument("--full-runs", type=int, default=1000, help="0: calibrate only")
     parser.add_argument("--jitter", type=float, default=0.05, help="start spread (logit units)")
+    parser.add_argument(
+        "--progress",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="numpyro progress bars in the log (default on)",
+    )
     parser.add_argument("--no-shear", action="store_true", help="NUTS in plain logit coordinates")
+    parser.add_argument(
+        "--aggregate",
+        default="mean",
+        choices=["mean", "sum"],
+        help="combine a target's years by mean (the code, default) or sum (the paper's text)",
+    )
     parser.add_argument("--seed", type=int, default=0)
     return parser.parse_args(argv)
 
@@ -76,11 +92,11 @@ def main() -> None:
         num_chains=args.chains,
         chain_method=args.chain_method,
         chunk=args.chunk,
-        num_warmup=args.warmup,
-        max_warmup=2 * args.warmup,
+        warmup_rounds=tuple(int(n) for n in args.warmup_rounds.split(",")),
         criteria=criteria,
         shear=not args.no_shear,
         jitter=args.jitter,
+        progress_bar=args.progress,
     )
     run_full_analysis(
         REPO_ROOT / "outputs" / "calibrate" / name,
@@ -89,6 +105,7 @@ def main() -> None:
         config=config,
         full_runs_samples=args.full_runs,
         seed=args.seed,
+        aggregate=args.aggregate,
     )
 
 
