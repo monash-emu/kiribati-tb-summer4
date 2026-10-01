@@ -1,6 +1,6 @@
 """Compare the reference calibration arms with each other and with the published posterior.
 
-    pixi run python scripts/compare_reference.py [--root outputs/reference] [--arm NAME=PATH]
+    pixi run python scripts/compare_reference.py [--run r2] [--root DIR] [--arm NAME=PATH]
 
 Loads every arm under ``--root`` that has written at least one sampling chunk
 (``<root>/<arm>/mcmc/idata.nc``; a run still in progress is read as it stands) and the published
@@ -33,7 +33,7 @@ import numpy as np
 import pandas as pd
 import plotly.express as px
 
-from kiribati_tb.paths import REPO_ROOT
+from kiribati_tb.paths import REPO_ROOT, compare_dir, reference_root
 from kiribati_tb.pipeline import diagnostics
 
 ARMS: tuple[str, ...] = ("nuts_td8", "nuts_td5", "sa", "ess")
@@ -185,16 +185,18 @@ def figures(arms: dict[str, dict[str, Any]], out: dict[str, pd.DataFrame], folde
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", default=str(REPO_ROOT / "outputs" / "reference"))
-    parser.add_argument("--out", default=str(REPO_ROOT / "outputs" / "compare_reference"))
+    parser.add_argument("--run", default=None, help="run set name (default: $RUN, else none)")
+    parser.add_argument("--root", default=None, help="default: outputs/reference[/<run>]")
+    parser.add_argument("--out", default=None, help="default: outputs/compare_reference[/<run>]")
     parser.add_argument("--arm", action="append", default=[], metavar="NAME=IDATA")
     parser.add_argument("--no-figures", action="store_true")
     args = parser.parse_args()
     extra = {k: Path(v) for k, v in (item.split("=", 1) for item in args.arm)}
-    arms = load_arms(Path(args.root), extra)
+    root = Path(args.root) if args.root else reference_root(args.run)
+    arms = load_arms(root, extra)
     if not arms:
         raise SystemExit("No arms found.")
-    folder = Path(args.out)
+    folder = Path(args.out) if args.out else compare_dir("compare_reference", args.run)
     folder.mkdir(parents=True, exist_ok=True)
     out = tables(arms)
     for name, frame in out.items():

@@ -10,7 +10,7 @@ and recomputed only when its file changes (or with ``--force``); the combined ta
 - ``projections.parquet``: arm, draw, scenario, metric, value (per-draw headline metrics);
 - ``arms.json``: where each arm came from, its draw counts and the projection seed.
 
-    pixi run python scripts/compare_posteriors.py [--arm NAME=outputs/calibrate/base] \\
+    pixi run python scripts/compare_posteriors.py [--run r2] [--arm NAME=outputs/calibrate/base] \\
         [--draws 1000] [--published-draws 2000]
 
 Default arms, each included when its file exists: the four reference arms
@@ -34,20 +34,24 @@ import pandas as pd
 
 from kiribati_tb.analysis import QUANTILES, run_scenarios
 from kiribati_tb.calibration import calibration_setup
-from kiribati_tb.paths import REPO_ROOT
+from kiribati_tb.paths import REPO_ROOT, compare_dir, reference_root
 
-OUT = REPO_ROOT / "outputs" / "compare"
 PUBLISHED = REPO_ROOT / "reference" / "published" / "idata.nc"
 PUBLISHED_BURN_IN = 10000
 PUBLISHED_SEED = 20260819  # the published file's creation date; recorded in arms.json
-DEFAULT_ARMS: dict[str, Path] = {
-    **{
-        arm: REPO_ROOT / "outputs" / "reference" / arm / "mcmc" / "idata.nc"
-        for arm in ("nuts_td8", "nuts_td5", "sa", "ess")
-    },
-    "published": PUBLISHED,
-    "aies_demo": REPO_ROOT / "outputs" / "calibrate" / "local_demo" / "idata.nc",
-}
+REFERENCE_ARMS = ("nuts_td8", "nuts_td5", "sa", "ess")
+
+
+def default_arms(run: str | None) -> dict[str, Path]:
+    """The reference arms of run set ``run`` (``outputs/reference[/<run>]``), plus fixed arms."""
+    root = reference_root(run)
+    return {
+        **{arm: root / arm / "mcmc" / "idata.nc" for arm in REFERENCE_ARMS},
+        "published": PUBLISHED,
+        "aies_demo": REPO_ROOT / "outputs" / "calibrate" / "local_demo" / "idata.nc",
+    }
+
+
 # The paper's scenarios: PEARL 65/85% (1, 3), CXR-TST 65/85% (6, 8), CXR only 85% (18).
 SCENARIOS: tuple[str, ...] = ("scenario_1", "scenario_3", "scenario_6", "scenario_8", "scenario_18")
 START_2026 = 2026.0
@@ -144,8 +148,10 @@ def main() -> None:
     parser.add_argument("--no-scenarios", action="store_true")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--force", action="store_true", help="recompute cached arms")
+    parser.add_argument("--run", default=None, help="run set name (default: $RUN, else none)")
     args = parser.parse_args()
-    arms = dict(DEFAULT_ARMS)
+    OUT = compare_dir("compare", args.run)
+    arms = default_arms(args.run)
     for item in args.arm:
         name, path = item.split("=", 1)
         p = Path(path)

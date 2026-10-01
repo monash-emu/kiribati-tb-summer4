@@ -101,7 +101,10 @@ ACCOUNT=<account> scripts/cluster/submit_reference.sh nuts_td8
 
 # 5b. A fresh, separate set of runs (new folders, logs and job names) beside earlier ones:
 RUN=r2 ACCOUNT=<account> scripts/cluster/submit_reference.sh   # outputs/reference/r2/<arm>/
-pixi run python scripts/compare_reference.py --root outputs/reference/r2
+# The comparison scripts and notebook 06 read a named set the same way:
+RUN=r2 pixi run python scripts/compare_reference.py      # -> outputs/compare_reference/r2/
+RUN=r2 pixi run python scripts/compare_posteriors.py     # -> outputs/compare/r2/
+RUN=r2 pixi run notebook                                 # notebook 06 reads the r2 set
 
 # 6. Compare whatever has finished (partial runs included) with each other and the paper's
 #    posterior, and project them through the scenarios; then open notebook 06.
