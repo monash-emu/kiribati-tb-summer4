@@ -41,6 +41,17 @@ synthetic-recovery = "python scripts/synthetic_recovery.py"
 find-map = "python scripts/find_map.py"
 calibrate = "python scripts/calibrate.py"
 run-notebooks = "pytest -q -m slow tests/test_notebooks.py"
+# Gradient-performance benchmarks (docs/gradient-performance.md); results in outputs/bench/.
+bench-profile = "python scripts/bench/profile_gradient.py"
+bench-levers = "python scripts/bench/levers.py"
+bench-before-after = "python scripts/bench/before_after.py"
+bench-stiffness = "python scripts/bench/stiffness.py"
+bench-nan = "python scripts/bench/nan_rate.py"
+bench-parallel = "python scripts/bench/parallel.py"
+bench-ab = "python scripts/bench/process_ab.py"
+bench-searchsorted = "python scripts/bench/searchsorted_ab.py"
+bench-float32 = "python scripts/bench/float32_ab.py"
+bench-energy = "python scripts/bench/energy_error.py"
 
 [feature.reference]
 platforms = ["osx-arm64", "linux-64"]
