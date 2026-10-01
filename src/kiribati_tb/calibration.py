@@ -186,11 +186,18 @@ def bayesian_model(
     *,
     solver: Mapping[str, Any] | None = None,
     extra_outputs: Sequence[str] = (),
+    t1: float = END_TIME,
 ) -> BayesianModel:
-    """A summer4 ``BayesianModel`` for ``setup``, scoring only the target outputs."""
+    """A summer4 ``BayesianModel`` for ``setup``, scoring only the target outputs.
+
+    ``t1`` is where the solve stops. Calibration can stop at :data:`CALIBRATION_END`, the last
+    target year (5% fewer solver steps); projections (``posterior_runs``) need the default.
+    """
     outputs = build_outputs(setup.config)
     keys = [t.key for t in setup.targets] + list(extra_outputs)
-    run_kwargs = {"t0": START_TIME, "t1": END_TIME, "dt": 1.0}
+    if any(float(np.max(t.times)) > t1 for t in setup.targets):
+        raise ValueError(f"t1={t1} is before a target year.")
+    run_kwargs = {"t0": START_TIME, "t1": t1, "dt": 1.0}
     run_kwargs |= dict(CALIBRATION_SOLVER if solver is None else solver)
     return BayesianModel(
         compile_model(setup.config),
@@ -201,6 +208,9 @@ def bayesian_model(
         run_kwargs=run_kwargs,
     )
 
+
+# The last year any target is observed (the mixing-matrix distance, 2025).
+CALIBRATION_END = 2025.0
 
 # For the Laplace metric's finite-difference Hessian, where solver noise must be small.
 TIGHT_SOLVER: dict[str, Any] = {"solver": "dopri5", "rtol": 1e-8, "atol": 1e-8, "max_steps": 16384}

@@ -199,63 +199,116 @@ def seeds(candidates: wf.Candidates, window: float = SEED_WINDOW) -> wf.Candidat
 # --------------------------------------------------------------------------------------------
 
 
-def nuts_factory(
+KERNELS: tuple[str, ...] = ("nuts", "sa", "ess")
+# Per-iteration fields each kernel records for the checkpoint's diagnostics.
+KERNEL_FIELDS: dict[str, tuple[str, ...]] = {
+    "nuts": ("diverging", "num_steps", "accept_prob"),
+    "sa": ("diverging", "accept_prob"),
+    "ess": (),
+}
+
+
+def make_mcmc(
     bm: Any,
+    config: PipelineConfig,
+    num_warmup: int,
     *,
-    num_chains: int,
-    chunk: int,
-    chain_method: str = "parallel",
-    dense_mass: bool = True,
-    target_accept_prob: float = 0.8,
-    max_tree_depth: int = 8,
     inverse_mass_matrix: np.ndarray | None = None,
     step_size: float = 1.0,
     shear: RidgeShear | None = None,
-    progress_bar: bool = False,
-) -> Callable[[int], Any]:
-    """``num_warmup -> numpyro MCMC`` with NUTS on ``bm`` (the factory ``wf.warmup_until`` takes).
+) -> Any:
+    """A numpyro ``MCMC`` for ``config.kernel`` on ``bm``, ``config.chunk`` draws per run.
 
-    A dense mass matrix absorbs the posterior's linear correlations (``raw_transmission_rate``
-    against ``infection_pop_scale`` is about -0.7). ``chain_method="parallel"`` needs one XLA
-    host device per chain (``XLA_FLAGS=--xla_force_host_platform_device_count=N``, set before
-    JAX is first imported, as ``scripts/calibrate.py`` does).
+    - ``"nuts"``: dense-mass NUTS. ``inverse_mass_matrix`` (sites sorted, e.g. from
+      :func:`laplace_covariance`) and ``step_size`` are where adaptation starts: from the
+      identity metric this posterior needs 255-step trajectories until the first mass-matrix
+      window closes. With ``shear`` the kernel runs on ``shear.potential(bm)`` in sheared
+      coordinates (:class:`RidgeShear`); draws then come back unconstrained and
+      ``Checkpoint(postprocess=...)`` maps them to parameters.
+    - ``"sa"``: numpyro's Sample Adaptive MCMC (gradient-free), one chain per core. Its
+      initialisation fails under ``chain_method="vectorized"`` with given ``init_params``
+      (numpyro 0.22), so use ``"parallel"`` or ``"sequential"``.
+    - ``"ess"``: numpyro's ensemble slice sampler with the differential move,
+      ``config.num_chains`` walkers vectorised in one program; ``ess_max_steps`` and
+      ``ess_max_iter`` cap the stepping-out and shrinking loops, which under ``vmap`` run every
+      walker to the slowest one.
 
-    ``inverse_mass_matrix`` (sites in sorted order, e.g. from :func:`laplace_covariance`) is
-    the metric warmup starts from. Without it NUTS starts from the identity, where the step
-    size that suits the narrowest direction needs 255-step trajectories (about 40 s per
-    iteration here) until the first mass-matrix window closes. With ``shear`` the kernel runs
-    on ``shear.potential(bm)`` in the sheared coordinates (see :class:`RidgeShear`): initial
-    parameters and the metric must then be in those coordinates too, and draws come back
-    unconstrained (``Checkpoint(postprocess=...)`` maps them to parameters).
+    ``chain_method="parallel"`` needs one XLA host device per chain
+    (``XLA_FLAGS=--xla_force_host_platform_device_count=N`` before JAX is first imported, as
+    the scripts do).
     """
-    from numpyro.infer import MCMC, NUTS
+    from numpyro.infer import ESS, MCMC, NUTS, SA
 
-    def make(num_warmup: int) -> Any:
-        target = (
-            {"model": bm.numpyro_model()}
-            if shear is None
-            else {"potential_fn": shear.potential(bm)}
-        )
+    target = (
+        {"model": bm.numpyro_model()} if shear is None else {"potential_fn": shear.potential(bm)}
+    )
+    chain_method = config.chain_method
+    if config.kernel == "nuts":
         kernel = NUTS(
             **target,
-            dense_mass=dense_mass,
-            target_accept_prob=target_accept_prob,
-            max_tree_depth=max_tree_depth,
+            dense_mass=True,
+            target_accept_prob=config.target_accept_prob,
+            max_tree_depth=config.max_tree_depth,
             inverse_mass_matrix=(
                 None if inverse_mass_matrix is None else jnp.asarray(inverse_mass_matrix)
             ),
             step_size=step_size,
         )
-        return MCMC(
-            kernel,
-            num_warmup=int(num_warmup),
-            num_samples=int(chunk),
-            num_chains=int(num_chains),
-            chain_method=chain_method,
-            progress_bar=progress_bar,
+    elif config.kernel == "sa":
+        if chain_method == "vectorized":
+            raise ValueError("numpyro's SA cannot vectorise seeded chains; use 'parallel'.")
+        kernel = SA(**target)
+    elif config.kernel == "ess":
+        kernel = ESS(
+            **target,
+            moves={ESS.DifferentialMove(): 1.0},
+            max_steps=config.ess_max_steps,
+            max_iter=config.ess_max_iter,
         )
+        chain_method = "vectorized"  # numpyro runs ensemble walkers in one program
+    else:
+        raise ValueError(f"Unknown kernel {config.kernel!r}; expected one of {KERNELS}.")
+    return MCMC(
+        kernel,
+        num_warmup=int(num_warmup),
+        num_samples=int(config.chunk),
+        num_chains=int(config.num_chains),
+        thinning=int(config.thinning),
+        chain_method=chain_method,
+        progress_bar=config.progress_bar,
+    )
 
-    return make
+
+def sample_chunks(
+    mcmc: Any,
+    stop: Callable[[Mapping[str, Any]], tuple[bool, str] | None],
+    *,
+    seed: int = 0,
+    extra_fields: tuple[str, ...] = (),
+) -> tuple[bool, str]:
+    """Sample a warmed-up ``mcmc`` in chunks of ``num_samples`` until ``stop`` decides.
+
+    ``wf.sample_until`` with the kernel's own diagnostic fields collected: it requests only
+    ``diverging``, so tree depth and acceptance would be lost (docs/summer4-workarounds.md,
+    W8). ``stop`` is called after every chunk with ``{"seconds": ...}`` for this call, the
+    shape of an ``MCMCRun.progress`` row a :class:`Checkpoint` reads.
+    """
+    from jax import random
+
+    if mcmc.post_warmup_state is None:
+        raise ValueError("sample_chunks needs a warmed-up MCMC (post_warmup_state set).")
+    key = random.PRNGKey(int(seed))
+    seconds = 0.0
+    while True:
+        key, sub = random.split(key)
+        start = time.perf_counter()
+        mcmc.run(sub, extra_fields=extra_fields)
+        jax.block_until_ready(mcmc.last_state)
+        seconds += time.perf_counter() - start
+        mcmc.post_warmup_state = mcmc.last_state
+        decision = stop({"seconds": seconds})
+        if decision is not None:
+            return decision
 
 
 def diagnostics(samples: Mapping[str, np.ndarray]) -> pd.DataFrame:
@@ -318,6 +371,8 @@ class Checkpoint:
     rows: list[dict[str, Any]] = field(default_factory=list)
     seconds_before: float = 0.0
     postprocess: Callable[[dict[str, Any]], dict[str, Any]] | None = None
+    cpus: int = 1
+    deadline: float | None = None  # wall clock (time.time()) this job must stop by
 
     def __post_init__(self) -> None:
         self.folder = Path(self.folder)
@@ -342,6 +397,9 @@ class Checkpoint:
         diag = diagnostics(self.samples)
         draws = int(next(iter(self.samples.values())).shape[1])
         seconds = self.seconds_before + float(row.get("seconds") or 0.0)
+        steps = np.asarray(extra["num_steps"]) if "num_steps" in extra else None
+        accept = np.asarray(extra["accept_prob"]) if "accept_prob" in extra else None
+        ess_min = min(float(diag["ess_bulk"].min()), float(diag["ess_tail"].min()))
         record = {
             "chunk": len(self.rows) + 1,
             "draws_per_chain": draws,
@@ -349,12 +407,30 @@ class Checkpoint:
             "ess_bulk_min": float(diag["ess_bulk"].min()),
             "ess_tail_min": float(diag["ess_tail"].min()),
             "divergence_frac": (None if self.diverging is None else float(np.mean(self.diverging))),
+            "chunk_divergence_frac": (
+                float(np.mean(extra["diverging"])) if "diverging" in extra else None
+            ),
+            "chunk_leapfrog_mean": None if steps is None else float(np.mean(steps)),
+            "chunk_treedepth_mean": None if steps is None else float(np.mean(np.log2(steps + 1))),
+            "chunk_accept_mean": None if accept is None else float(np.mean(accept)),
             "seconds": seconds,
+            "cpu_hours": seconds * self.cpus / 3600.0,
+            "ess_min_per_cpu_hour": ess_min / max(seconds * self.cpus / 3600.0, 1e-9),
         }
         decision = self.decide(record)
+        previous = self.rows[-1]["seconds"] if self.rows else self.seconds_before
+        chunk_seconds = max(seconds - float(previous or 0.0), 0.0)
+        if (
+            decision is None
+            and self.deadline is not None
+            and time.time() + 1.25 * chunk_seconds > self.deadline
+        ):
+            decision = (False, "deadline")  # another chunk would overrun this job
         record["decision"] = None if decision is None else decision[1]
         self.rows.append(record)
         self.save(seconds)
+        report = {"record": record, "per_parameter": diag.round(5).to_dict(orient="index")}
+        _atomic(self.folder / "diagnostics.json", lambda p: p.write_text(json.dumps(report)))
         print(f"[checkpoint] {json.dumps(record)}", flush=True)
         return decision
 
@@ -395,7 +471,12 @@ class Checkpoint:
         state = jax.device_get(self.mcmc.last_state)
         _atomic(self.folder / "mcmc_state.pkl", lambda p: p.write_bytes(pickle.dumps(state)))
         _atomic(self.folder / "progress.csv", lambda p: self.progress.to_csv(p))
-        meta = {"seconds": seconds, "chunks": len(self.rows), "criteria": asdict(self.criteria)}
+        meta = {
+            "seconds": seconds,
+            "chunks": len(self.rows),
+            "criteria": asdict(self.criteria),
+            "cpus": self.cpus,
+        }
         _atomic(self.folder / "checkpoint.json", lambda p: p.write_text(json.dumps(meta)))
 
     @classmethod
@@ -420,7 +501,10 @@ class Checkpoint:
             diverging = np.asarray(idata.sample_stats["diverging"].values)
         state = pickle.loads((folder / "mcmc_state.pkl").read_bytes())
         mcmc.post_warmup_state = jax.tree.map(jnp.asarray, state)
-        rows = pd.read_csv(folder / "progress.csv").to_dict("records")
+        rows = [
+            {k: (None if isinstance(v, float) and np.isnan(v) else v) for k, v in r.items()}
+            for r in pd.read_csv(folder / "progress.csv").to_dict("records")
+        ]
         return cls(
             mcmc=mcmc,
             folder=folder,
@@ -430,6 +514,7 @@ class Checkpoint:
             rows=rows,
             seconds_before=float(meta["seconds"]),
             postprocess=postprocess,
+            cpus=int(meta.get("cpus", 1)),
         )
 
 
@@ -437,6 +522,10 @@ def _atomic(path: Path, write: Callable[[Path], Any]) -> None:
     tmp = path.with_name(path.name + ".tmp")
     write(tmp)
     tmp.replace(path)
+
+
+class DeadlineReached(RuntimeError):
+    """A stage stopped before the job's deadline; rerun with the same folder to resume."""
 
 
 @dataclass
@@ -459,6 +548,7 @@ class StagedWarmup:
     rounds: tuple[int, ...] = (100, 100, 200, 200, 400)
     check: Callable[[Mapping[str, Any]], Any] = field(default_factory=lambda: wf.WarmupRule())
     max_tree_depth: int = 8
+    extra_fields: tuple[str, ...] = ("num_steps", "accept_prob", "diverging")
     rows: list[dict[str, Any]] = field(default_factory=list)
     mcmc: Any = None
     done: bool = False
@@ -474,8 +564,13 @@ class StagedWarmup:
         *,
         step_size: float = 1.0,
         seed: int = 0,
+        deadline: float | None = None,
     ) -> Any:
-        """Warm up (or resume warming up); return the warmed-up ``MCMC``."""
+        """Warm up (or resume warming up); return the warmed-up ``MCMC``.
+
+        Raises :class:`DeadlineReached` instead of starting a round that would not finish
+        before ``deadline`` (``time.time()``), judged from the previous round's pace.
+        """
         from jax import random
 
         saved = self._load()
@@ -489,6 +584,10 @@ class StagedWarmup:
         while not self.done:
             k = len(self.rows)
             n = self.rounds[min(k, len(self.rounds) - 1)]
+            if deadline is not None and self.rows:
+                pace = float(self.rows[-1]["seconds_per_iteration"])
+                if time.time() + 1.25 * pace * n > deadline:
+                    raise DeadlineReached(f"warmup round {k + 1} would overrun the deadline")
             mcmc = self.build(n, metric, step_size)
             start = time.perf_counter()
             key, sub = random.split(key)
@@ -496,8 +595,10 @@ class StagedWarmup:
                 sub,
                 init_params=init_params,
                 collect_warmup=True,
-                extra_fields=("num_steps", "accept_prob", "diverging"),
+                extra_fields=self.extra_fields,
             )
+            # Parallel chains return futures: wait for them, or the round looks instant.
+            jax.block_until_ready(mcmc.post_warmup_state)
             seconds = time.perf_counter() - start
             row = self._row(mcmc, k + 1, n, seconds)
             state = mcmc.post_warmup_state
@@ -506,40 +607,56 @@ class StagedWarmup:
             self.done = not failed or k + 1 >= len(self.rounds)
             row["done"] = self.done
             self.rows.append(row)
-            init_params = {name: np.asarray(v) for name, v in state.z.items()}
-            metric = _pooled_metric(state.adapt_state.inverse_mass_matrix)
-            step_size = float(np.median(np.asarray(state.adapt_state.step_size)))
+            init_params = jax.tree.map(np.asarray, state.z)
+            adapt = getattr(state, "adapt_state", None)
+            if adapt is not None and hasattr(adapt, "inverse_mass_matrix"):  # HMC / NUTS
+                metric = _pooled_metric(adapt.inverse_mass_matrix)
+                step_size = float(np.median(np.asarray(adapt.step_size)))
             self._save(init_params, metric, step_size, state)
             print(f"[warmup] {json.dumps(row)}", flush=True)
             self.mcmc = mcmc
         return self.mcmc
 
     def _row(self, mcmc: Any, k: int, n: int, seconds: float) -> dict[str, Any]:
-        draws = {name: np.asarray(v) for name, v in mcmc.get_samples(group_by_chain=True).items()}
+        """Second-half statistics of a round; fields a kernel does not record are ``None``."""
+        draws = mcmc.get_samples(group_by_chain=True)
+        if not isinstance(draws, Mapping):  # a kernel on a flat potential: one array
+            draws = {"z": draws}
+        half = {name: np.asarray(v)[:, n // 2 :] for name, v in draws.items()}
         extra = {
             name: np.asarray(v)[:, n // 2 :]
             for name, v in mcmc.get_extra_fields(group_by_chain=True).items()
         }
-        half = {name: v[:, n // 2 :] for name, v in draws.items()}
-        steps = np.atleast_1d(np.asarray(mcmc.post_warmup_state.adapt_state.step_size))
-        sampler = mcmc.sampler
+        adapt = getattr(mcmc.post_warmup_state, "adapt_state", None)
+        steps = (
+            np.atleast_1d(np.asarray(adapt.step_size))
+            if adapt is not None and hasattr(adapt, "inverse_mass_matrix")
+            else None
+        )
+        mean = lambda name: float(np.mean(extra[name])) if name in extra else None  # noqa: E731
         return {
             "round": k,
             "num_warmup": n,
             "seconds": round(seconds, 1),
-            "seconds_per_iteration": round(seconds / n, 2),
-            "leapfrog_mean": float(np.mean(extra["num_steps"])),
+            "seconds_per_iteration": round(seconds / n, 3),
+            "leapfrog_mean": mean("num_steps"),
             "rhat_max": float(diagnostics(half)["rhat"].max()),
-            "step_size_min": float(steps.min()),
-            "step_size_max": float(steps.max()),
-            "step_size_ratio": float(steps.max() / steps.min()),
-            "accept_mean": float(np.mean(extra["accept_prob"])),
-            "target_accept_prob": float(getattr(sampler, "_target_accept_prob", 0.8)),
-            "divergence_frac": float(np.mean(extra["diverging"])),
-            "treedepth_frac": float(np.mean(extra["num_steps"] >= 2**self.max_tree_depth - 1)),
+            "step_size_min": None if steps is None else float(steps.min()),
+            "step_size_max": None if steps is None else float(steps.max()),
+            "step_size_ratio": None if steps is None else float(steps.max() / steps.min()),
+            "accept_mean": mean("accept_prob"),
+            "target_accept_prob": (
+                None if steps is None else float(getattr(mcmc.sampler, "_target_accept_prob", 0.8))
+            ),
+            "divergence_frac": mean("diverging"),
+            "treedepth_frac": (
+                float(np.mean(extra["num_steps"] >= 2**self.max_tree_depth - 1))
+                if "num_steps" in extra
+                else None
+            ),
         }
 
-    def _save(self, z: Any, metric: np.ndarray, step_size: float, state: Any) -> None:
+    def _save(self, z: Any, metric: np.ndarray | None, step_size: float, state: Any) -> None:
         blob = {
             "z": z,
             "metric": metric,
@@ -551,7 +668,7 @@ class StagedWarmup:
         _atomic(self.folder / "warmup.pkl", lambda p: p.write_bytes(pickle.dumps(blob)))
         _atomic(self.folder / "warmup.csv", lambda p: self.progress.to_csv(p))
 
-    def _load(self) -> tuple[Any, np.ndarray, float, Any] | None:
+    def _load(self) -> tuple[Any, np.ndarray | None, float, Any] | None:
         path = self.folder / "warmup.pkl"
         if not path.exists():
             return None
@@ -719,8 +836,14 @@ def laplace_psis(
 
 @dataclass(frozen=True)
 class PipelineConfig:
-    """Settings for :func:`calibrate` (defaults chosen by measurement; see the gate notebook)."""
+    """Settings for :func:`calibrate`. The defaults are the NUTS arm ``nuts_td8``.
 
+    ``kernel`` is ``"nuts"``, ``"sa"`` or ``"ess"`` (:func:`make_mcmc`); ``num_chains`` is
+    chains (walkers for ``"ess"``); ``thinning`` keeps every n-th draw; ``cpus`` is what the
+    job was given, for CPU-hour accounting.
+    """
+
+    kernel: str = "nuts"
     design: int = 256
     starts: int = 24
     opt_steps: int = 300
@@ -729,12 +852,17 @@ class PipelineConfig:
     chain_method: str = "parallel"
     warmup_rounds: tuple[int, ...] = (100, 100, 200, 200, 400)
     chunk: int = 200
+    thinning: int = 1
     jitter: float = 0.05
     criteria: StopCriteria = field(default_factory=StopCriteria)
     target_accept_prob: float = 0.8
     max_tree_depth: int = 8
     shear: bool = True
     progress_bar: bool = True
+    cpus: int = 8
+    tight_metric: bool = True
+    ess_max_steps: int = 20
+    ess_max_iter: int = 50
 
 
 @dataclass
@@ -782,6 +910,24 @@ class Calibration:
         }
 
 
+def initial_positions(
+    optima: wf.Candidates, config: PipelineConfig, metric: np.ndarray | None, *, seed: int = 0
+) -> dict[str, np.ndarray]:
+    """Unconstrained starting points, one per chain (or walker).
+
+    NUTS and SA chains start at the optima within :data:`SEED_WINDOW` of the best, jittered by
+    ``config.jitter``. Ensemble walkers must span the posterior, so they are drawn from the
+    Laplace approximation (``metric``, sites sorted) around the best optimum.
+    """
+    if config.kernel != "ess" or metric is None:
+        return seeds(optima).init_params(config.num_chains, jitter=config.jitter, seed=seed)
+    best = optima.best(1)
+    sites = sorted(best.sites)
+    mode = np.asarray([float(np.asarray(best.z[s])[0]) for s in sites])
+    draws = np.random.default_rng(seed).multivariate_normal(mode, metric, size=config.num_chains)
+    return {s: draws[:, i] for i, s in enumerate(sites)}
+
+
 def calibrate(
     bm: Any,
     folder: Path,
@@ -790,11 +936,19 @@ def calibrate(
     fallback: Any = None,
     metric_bm: Any = None,
     seed: int = 0,
+    deadline: float | None = None,
 ) -> Calibration:
-    """Design → multi-start L-BFGS → mode check → seeded, checkpointed NUTS.
+    """Design → multi-start L-BFGS → mode check → Laplace metric → checkpointed MCMC.
+
+    The MCMC stage is ``config.kernel`` (NUTS by default; SA and the ensemble slice sampler
+    for the gradient-free reference arms), warmed up by :class:`StagedWarmup` and sampled by
+    :func:`sample_chunks` with a :class:`Checkpoint` as the stop rule.
 
     Every stage writes to ``folder`` and is skipped on a rerun when its output exists, so a
-    killed job restarts where it stopped. ``fallback`` is ``bm`` solved with diffrax's
+    killed job restarts where it stopped. ``deadline`` (``time.time()``) is when the job must
+    stop: warmup raises :class:`DeadlineReached` rather than start a round it cannot finish,
+    and sampling stops (decision ``"deadline"``) rather than start a chunk it cannot finish.
+    ``fallback`` is ``bm`` solved with diffrax's
     forward-mode adjoint, used by :func:`lbfgs` where a reverse-mode gradient is NaN;
     ``metric_bm`` is ``bm`` with a tight solver, for the Laplace metric NUTS starts from.
     Without the checkpointing it stands for::
@@ -803,15 +957,14 @@ def calibrate(
         modes = distinct_optima(optima)
         _, cov = laplace_covariance(metric_bm, mode)  # mode: optima.best(1) as a dict
         shear = ridge_shear(bm, mode, cov)
-        build = lambda n, metric, step: nuts_factory(
-            bm, num_chains=8, chunk=200, shear=shear, inverse_mass_matrix=metric,
-            step_size=step)(n)
+        build = lambda n, metric, step: make_mcmc(
+            bm, PipelineConfig(), n, shear=shear, inverse_mass_matrix=metric, step_size=step)
         init = shear.forward(seeds(optima).init_params(8, jitter=0.05))
-        mcmc = StagedWarmup(build, folder / "nuts").run(
+        mcmc = StagedWarmup(build, folder / "mcmc").run(
             init, sheared_covariance(shear, mode, cov))
-        stop = Checkpoint(mcmc, folder / "nuts", StopCriteria(),
+        stop = Checkpoint(mcmc, folder / "mcmc", StopCriteria(),
                           postprocess=lambda w: bm.constrain(shear.inverse(w)))
-        wf.sample_until(mcmc, stop)
+        sample_chunks(mcmc, stop, extra_fields=KERNEL_FIELDS["nuts"])
     """
     folder = Path(folder)
     folder.mkdir(parents=True, exist_ok=True)
@@ -837,7 +990,7 @@ def calibrate(
             bm,
             points.best(config.starts),
             fallback=fallback,
-            workers=config.workers,
+            workers=min(config.workers, config.cpus),
             maxiter=config.opt_steps,
         )
         optima.save(optima_path)
@@ -855,10 +1008,15 @@ def calibrate(
         _, metric = laplace_covariance(metric_bm, mode)
         np.save(metric_path, metric)
         record("laplace", start)
+    if metric is None and config.kernel == "ess":
+        raise ValueError(
+            "The ensemble arm draws its walkers from the Laplace metric: pass metric_bm."
+        )
 
+    raw_metric = metric
     shear: RidgeShear | None = None
     postprocess: Callable[[dict[str, Any]], dict[str, Any]] | None = None
-    if config.shear and metric is not None:
+    if config.kernel == "nuts" and config.shear and metric is not None:
         shear = ridge_shear(bm, mode, metric)
         metric = sheared_covariance(shear, mode, metric)
         (folder / "shear.json").write_text(json.dumps(asdict(shear)))
@@ -868,44 +1026,54 @@ def calibrate(
             params = bm.constrain(shear.inverse({k: jnp.asarray(v) for k, v in chunk.items()}))
             return {k: np.asarray(v) for k, v in params.items()}
 
-    nuts_dir = folder / "nuts"
+    chain_dir = folder / "mcmc"
+    use_shear = shear if config.kernel == "nuts" else None
 
     def build(num_warmup: int, inverse_mass_matrix: Any, step_size: float) -> Any:
-        return nuts_factory(
+        return make_mcmc(
             bm,
-            num_chains=config.num_chains,
-            chunk=config.chunk,
-            chain_method=config.chain_method,
-            target_accept_prob=config.target_accept_prob,
-            max_tree_depth=config.max_tree_depth,
-            inverse_mass_matrix=inverse_mass_matrix,
+            config,
+            num_warmup,
+            inverse_mass_matrix=inverse_mass_matrix if config.kernel == "nuts" else None,
             step_size=step_size,
-            shear=shear,
-            progress_bar=config.progress_bar,
-        )(num_warmup)
+            shear=use_shear,
+        )
 
     staged = StagedWarmup(
-        build, nuts_dir, rounds=config.warmup_rounds, max_tree_depth=config.max_tree_depth
+        build,
+        chain_dir,
+        rounds=config.warmup_rounds,
+        max_tree_depth=config.max_tree_depth,
+        extra_fields=KERNEL_FIELDS[config.kernel],
     )
     probe = build(config.warmup_rounds[0], metric, 1.0)
-    checkpoint = Checkpoint.resume(nuts_dir, probe, config.criteria, postprocess)
+    checkpoint = Checkpoint.resume(chain_dir, probe, config.criteria, postprocess)
     if checkpoint is not None:
         mcmc = probe
         staged._load()
+        checkpoint.cpus = config.cpus
     else:
         start = time.perf_counter()
-        init = seeds(optima).init_params(config.num_chains, jitter=config.jitter, seed=seed)
-        if shear is not None:
-            init = {k: np.asarray(v) for k, v in shear.forward(init).items()}
-        mcmc = staged.run(init, metric, seed=seed)
+        init = initial_positions(optima, config, raw_metric, seed=seed)
+        if use_shear is not None:
+            init = {k: np.asarray(v) for k, v in use_shear.forward(init).items()}
+        mcmc = staged.run(init, metric, seed=seed, deadline=deadline)
         record("warmup", start)
-        checkpoint = Checkpoint(mcmc, nuts_dir, config.criteria, postprocess=postprocess)
+        checkpoint = Checkpoint(
+            mcmc, chain_dir, config.criteria, postprocess=postprocess, cpus=config.cpus
+        )
+    checkpoint.deadline = deadline
     start = time.perf_counter()
     last = checkpoint.rows[-1].get("decision") if checkpoint.rows else None
-    if last not in ("diagnostics",):
-        if last is not None:  # a finished budget: continue only if the new criteria allow it
+    if last != "diagnostics":
+        if last is not None:  # a spent budget: continue only if the new criteria allow it
             checkpoint.rows[-1]["decision"] = None
-        wf.sample_until(mcmc, checkpoint, seed=seed + 1 + len(checkpoint.rows))
+        sample_chunks(
+            mcmc,
+            checkpoint,
+            seed=seed + 1 + len(checkpoint.rows),
+            extra_fields=KERNEL_FIELDS[config.kernel],
+        )
     record("sample", start)
     return Calibration(folder, optima, modes, staged.progress, checkpoint, seconds)
 

@@ -34,7 +34,7 @@ import yaml  # noqa: E402
 
 from kiribati_tb.analysis import run_full_analysis  # noqa: E402
 from kiribati_tb.paths import REPO_ROOT  # noqa: E402
-from kiribati_tb.pipeline import PipelineConfig, StopCriteria  # noqa: E402
+from kiribati_tb.pipeline import DeadlineReached, PipelineConfig, StopCriteria  # noqa: E402
 
 ANALYSIS_NAME = "longer_runs"
 OUTPUT_PARENT = REPO_ROOT / "outputs" / "cluster"
@@ -48,10 +48,13 @@ RUN_CONFIG: dict[str, Any] = {
         num_chains=CHAINS,
         chain_method="parallel",
         chunk=200,
-        criteria=StopCriteria(rhat=1.01, ess=400.0, max_seconds=36 * 3600.0),
+        criteria=StopCriteria(rhat=1.01, ess=400.0, max_divergence_frac=None),
     ),
     "full_runs_samples": 2000,
 }
+# Wall-clock budget inside the 48 h sbatch --time: calibration stops between rounds or chunks
+# before this, leaving time for the full runs once it has converged; resubmit to continue.
+CALIBRATION_HOURS = 44.0
 
 
 def build_param_grid() -> list[dict[str, float]]:
@@ -98,7 +101,13 @@ def main() -> None:
     folder = task_folder(task_id, ANALYSIS_NAME)
     log_job(folder, array_job_id)
     print(f"Task {task_id} parameter overrides: {overrides}", flush=True)
-    run_full_analysis(folder, param_overrides=overrides, seed=task_id, **RUN_CONFIG)
+    deadline = start + CALIBRATION_HOURS * 3600.0
+    try:
+        run_full_analysis(
+            folder, param_overrides=overrides, seed=task_id, deadline=deadline, **RUN_CONFIG
+        )
+    except DeadlineReached as exc:
+        print(f"Task {task_id} stopped for its deadline ({exc}); resubmit to resume.", flush=True)
     print(f"Finished in {time.time() - start:.0f} seconds", flush=True)
 
 

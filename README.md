@@ -68,6 +68,47 @@ summer4 is pinned to `main` at `c9548d5` (after `v0.2.0a5`): the solver backends
 let the port choose diffrax's adjoint (forward mode where reverse-mode gradients are NaN), and
 step 30's run objects are what `wf.sample_until` and `wf.optimize` return.
 
+## Running the reference calibrations on MASSIVE
+
+Four long runs of the base case, one per sampler (`kiribati_tb.reference`): `nuts_td8` (dense
+NUTS, tree depth 8), `nuts_td5` (tree depth 5), `sa` (Sample Adaptive MCMC) and `ess` (ensemble
+slice sampling, 64 walkers). Each is one SLURM job; each stops when every parameter has split
+R-hat ≤ 1.01 and bulk and tail ESS ≥ 400, or 2 h before its wall time, and resumes from its
+checkpoint when resubmitted.
+
+```bash
+# 1. On a login node: get the branch and the environment (once).
+git clone https://github.com/monash-emu/kiribati-tb-summer4.git
+cd kiribati-tb-summer4
+git checkout feat/k4b-fast-calibration
+pixi install
+
+# 2. Optional, minutes: check every arm end to end with tiny settings (and its resume).
+scripts/cluster/smoke_reference.sh            # logs in outputs/logs/smoke_<arm>.log
+
+# 3. Submit all four arms (or name some: scripts/cluster/submit_reference.sh nuts_td5 ess).
+#    Either put the project in the template (replace <account> in
+#    scripts/cluster/reference_arm.sh; the original analysis used sh30) or pass it:
+ACCOUNT=<account> scripts/cluster/submit_reference.sh
+
+# 4. Watch: progress bars, one [warmup] line per warmup round, one [checkpoint] line per chunk.
+squeue -u $USER
+tail -f outputs/cluster/logs/ref_nuts_td8_<jobid>.out
+cat outputs/reference/nuts_td8/mcmc/diagnostics.json     # latest R-hat / ESS per parameter
+
+# 5. A job that stopped for its deadline (or was killed) continues where it left off:
+ACCOUNT=<account> scripts/cluster/submit_reference.sh nuts_td8
+
+# 6. Compare whatever has finished (partial runs included) with each other and the paper's
+#    posterior, and project them through the scenarios; then open notebook 06.
+pixi run python scripts/compare_reference.py
+pixi run python scripts/compare_posteriors.py
+pixi run notebook                            # notebooks/06-fast-calibration.ipynb
+```
+
+Per-arm resources (set in `scripts/cluster/submit_reference.sh`) and the local measurements
+behind them are in the table in `docs/reference-runs.md`.
+
 ## Cluster runs
 
 `scripts/cluster/` holds the array-job drivers for the published analyses (the 4×4 grid of

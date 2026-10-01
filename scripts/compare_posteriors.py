@@ -10,13 +10,13 @@ and recomputed only when its file changes (or with ``--force``); the combined ta
 - ``projections.parquet``: arm, draw, scenario, metric, value (per-draw headline metrics);
 - ``arms.json``: where each arm came from, its draw counts and the projection seed.
 
-    pixi run python scripts/compare_posteriors.py [--arm fast=outputs/calibrate/base] \\
+    pixi run python scripts/compare_posteriors.py [--arm NAME=outputs/calibrate/base] \\
         [--draws 1000] [--published-draws 2000]
 
-Default arms, each included when its file exists: ``reference`` (the long NUTS run),
-``fast`` (``outputs/calibrate/base``), ``published`` (``reference/published/idata.nc``, draws
-10,000-19,999 of each chain as the paper used, 2,000 of them projected), and ``aies_demo``
-(the earlier unconverged AIES run).
+Default arms, each included when its file exists: the four reference arms
+(``outputs/reference/<arm>/mcmc/idata.nc``, from ``scripts/reference_run.py``), ``published``
+(``reference/published/idata.nc``, draws 10,000-19,999 of each chain as the paper used, 2,000
+of them projected), and ``aies_demo`` (the earlier unconverged AIES run).
 """
 
 from __future__ import annotations
@@ -41,8 +41,10 @@ PUBLISHED = REPO_ROOT / "reference" / "published" / "idata.nc"
 PUBLISHED_BURN_IN = 10000
 PUBLISHED_SEED = 20260819  # the published file's creation date; recorded in arms.json
 DEFAULT_ARMS: dict[str, Path] = {
-    "reference": REPO_ROOT / "outputs" / "calibrate" / "reference" / "idata.nc",
-    "fast": REPO_ROOT / "outputs" / "calibrate" / "base" / "idata.nc",
+    **{
+        arm: REPO_ROOT / "outputs" / "reference" / arm / "mcmc" / "idata.nc"
+        for arm in ("nuts_td8", "nuts_td5", "sa", "ess")
+    },
     "published": PUBLISHED,
     "aies_demo": REPO_ROOT / "outputs" / "calibrate" / "local_demo" / "idata.nc",
 }

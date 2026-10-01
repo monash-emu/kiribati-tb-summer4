@@ -10,9 +10,10 @@ from __future__ import annotations
 import sys
 import time
 
-from massiverun import RUN_CONFIG, dump_map, log_job, task_folder
+from massiverun import CALIBRATION_HOURS, RUN_CONFIG, dump_map, log_job, task_folder
 
 from kiribati_tb.analysis import run_full_analysis
+from kiribati_tb.pipeline import DeadlineReached
 
 ANALYSIS_NAME = "sas"
 SA_BY_TASK_ID: dict[int, str] = {1: "tpt_60", 2: "subclinical_50", 3: "homogeneous_mixing"}
@@ -25,9 +26,16 @@ def main() -> None:
         dump_map(ANALYSIS_NAME, "sa", SA_BY_TASK_ID)
     folder = task_folder(task_id, ANALYSIS_NAME)
     log_job(folder, array_job_id)
-    run_full_analysis(
-        folder, sensitivity_analysis=SA_BY_TASK_ID[task_id], seed=task_id, **RUN_CONFIG
-    )
+    try:
+        run_full_analysis(
+            folder,
+            sensitivity_analysis=SA_BY_TASK_ID[task_id],
+            seed=task_id,
+            deadline=start + CALIBRATION_HOURS * 3600.0,
+            **RUN_CONFIG,
+        )
+    except DeadlineReached as exc:
+        print(f"Task {task_id} stopped for its deadline ({exc}); resubmit to resume.", flush=True)
     print(f"Finished in {time.time() - start:.0f} seconds", flush=True)
 
 

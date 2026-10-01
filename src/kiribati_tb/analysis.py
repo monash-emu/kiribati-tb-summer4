@@ -29,6 +29,7 @@ import yaml
 from summer4.epi.calibration import Scenario as RunScenario
 
 from kiribati_tb.calibration import (
+    CALIBRATION_END,
     TIGHT_SOLVER,
     CalibrationSetup,
     bayesian_model,
@@ -218,6 +219,7 @@ def run_full_analysis(
     seed: int = 0,
     scenario_ids: Sequence[str] | None = None,
     aggregate: str = "mean",
+    deadline: float | None = None,
 ) -> Any:
     """Calibrate with :func:`kiribati_tb.pipeline.calibrate`, then run and write the scenarios.
 
@@ -225,22 +227,29 @@ def run_full_analysis(
     rerunning the same call after a kill resumes it. ``idata.nc`` holds every post-warmup draw;
     ``details.yaml`` adds the convergence diagnostics (per-parameter R-hat, bulk and tail
     ESS, the optima found, stage timings). Full runs draw ``full_runs_samples`` posterior draws
-    uniformly from all chains.
+    uniformly from all chains. ``deadline`` (``time.time()``) stops the calibration between
+    warmup rounds or sampling chunks (``pipeline.DeadlineReached`` from warmup); the full runs
+    happen only once it has converged or spent its draw budget.
     """
     from kiribati_tb.calibration import calibration_setup
     from kiribati_tb.scenarios import SCENARIOS
 
     folder.mkdir(parents=True, exist_ok=True)
     setup = calibration_setup(sensitivity_analysis, param_overrides, aggregate=aggregate)
-    bm = bayesian_model(setup)
+    bm = bayesian_model(setup, t1=CALIBRATION_END)
     config = PipelineConfig() if config is None else config
     start = time.time()
-    fallback = bayesian_model(setup, solver=forward_mode_solver())
-    tight = bayesian_model(setup, solver=TIGHT_SOLVER)
-    fit = calibrate(bm, folder, config, fallback=fallback, metric_bm=tight, seed=seed)
+    fallback = bayesian_model(setup, solver=forward_mode_solver(), t1=CALIBRATION_END)
+    tight = bayesian_model(setup, solver=TIGHT_SOLVER, t1=CALIBRATION_END)
+    fit = calibrate(
+        bm, folder, config, fallback=fallback, metric_bm=tight, seed=seed, deadline=deadline
+    )
     mcmc_time = time.time() - start
     idata = fit.idata
     idata.to_netcdf(folder / "idata.nc")
+    if fit.checkpoint.rows and fit.checkpoint.rows[-1].get("decision") == "deadline":
+        print(f"[analysis] {folder} stopped for its deadline; resubmit to resume.", flush=True)
+        return fit, None
     summary = fit.summary()
     model_config = {
         "heterogeneous_mixing": setup.config.heterogeneous_mixing,

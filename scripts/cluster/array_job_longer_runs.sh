@@ -32,6 +32,8 @@ mkdir -p outputs/cluster/logs
 # The pixi environment replaces the original's conda environment; install it once with
 # `pixi install` on a login node. Keep XLA to the cores SLURM gave this task.
 export OMP_NUM_THREADS=1
+# Unbuffered output so progress bars and checkpoint lines reach the log as they happen.
+export PYTHONUNBUFFERED=1
 
 # Stagger task starts so sixteen tasks do not resolve the pixi environment at once.
 sleep $((SLURM_ARRAY_TASK_ID * 10))

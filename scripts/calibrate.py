@@ -13,11 +13,8 @@ writes the original's files to ``outputs/calibrate/<name>/``: ``idata.nc``,
 ``--chain-method parallel`` gives each chain its own XLA CPU device (one core each), which is
 set up here before JAX is imported.
 
-The reference posterior the fast pipeline is checked against is the same pipeline run longer,
-from more dispersed starts, with a different seed, to four times the ESS::
-
-    pixi run calibrate --name reference --ess 1600 --warmup-rounds 200,200,400,400,800 \
-        --jitter 0.5 --seed 101 --full-runs 0
+The long reference runs (four samplers) are ``scripts/reference_run.py`` and
+``scripts/cluster/submit_reference.sh``.
 """
 
 from __future__ import annotations
