@@ -10,6 +10,8 @@ from scipy import stats
 
 from summer4.epi.calibration import Uniform
 from kiribati_tb.calibration import (
+    CALIBRATION_SOLVER,
+    MIXING_JUMPS,
     SENSITIVITY_ANALYSES,
     bayesian_model,
     calibration_setup,
@@ -111,3 +113,32 @@ def test_fast_infectiousness_loss_narrows_the_gain_prior() -> None:
         2.0,
         10.0,
     )
+
+
+def test_calibration_solver_steps_onto_every_mixing_jump() -> None:
+    backend = CALIBRATION_SOLVER["solver"]
+    jumps = np.asarray(backend.stepsize_controller.jump_ts)
+    np.testing.assert_array_equal(jumps, MIXING_JUMPS)
+    np.testing.assert_array_equal(MIXING_JUMPS, np.arange(1851.0, 2035.0))
+    assert backend.name == "bosh3"
+
+
+def _golden_point(bm: object) -> dict[str, object]:
+    params = yaml.safe_load((GOLDEN / "hetero_baseline" / "params.yaml").read_text())["params"]
+    return bm.unconstrain({p.name: params.get(p.name, 12.5) for p in bm._sites})
+
+
+@pytest.mark.slow
+def test_calibration_solver_is_close_to_a_tight_solve() -> None:
+    """At the golden parameters the calibration log density agrees with a 1e-10 solve.
+
+    The golden parameters are far into the tail (log density about -2,200), where the
+    likelihood magnifies solver error; within the posterior the error is below 2e-3 nats
+    (docs/gradient-performance.md).
+    """
+    setup = calibration_setup()
+    z = _golden_point(bayesian_model(setup))
+    tight = bayesian_model(setup, solver={"solver": "dopri5", "rtol": 1e-10, "atol": 1e-10})
+    exact = float(jax.jit(tight.log_density)(z))
+    fast = float(jax.jit(bayesian_model(setup).log_density)(z))
+    assert fast == pytest.approx(exact, rel=1e-4)

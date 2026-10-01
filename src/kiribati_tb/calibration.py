@@ -169,11 +169,61 @@ def calibration_setup(
     return CalibrationSetup(config, params, priors, targets)
 
 
-# The original calibrated with summer2gen's default solver tolerance (``rtol = atol = 1.4e-4``);
-# its log density is within 0.003 nats of a 1e-10 solve and its gradient within 0.3%. A
-# plausible parameter set takes 650-850 steps; ``max_steps`` caps the cost of a pathological
-# one (summer4's default, 64 per year, is 11,840) and scores it as a failed solve.
-CALIBRATION_SOLVER: dict[str, Any] = {
+# The yearly mixing matrix (``Lookup`` on ``floor(Time() - START_TIME)``) changes value at every
+# integer year inside the window. Given to the step-size controller as ``jump_ts``, the solver
+# ends a step on each one instead of stepping across it.
+MIXING_JUMPS: np.ndarray = np.arange(START_TIME + 1.0, END_TIME)
+# Hairer & Wanner's PI step-size controller for step sizes limited by stability (the
+# ``diffrax.PIDController`` documentation's suggestion for stiff problems).
+PI_COEFFICIENTS: dict[str, float] = {"pcoeff": 0.4, "icoeff": 0.3}
+
+
+def calibration_solver(
+    solver: Any = None,
+    *,
+    rtol: float = 1.4e-4,
+    adjoint: Any = None,
+    max_steps: int = 4096,
+) -> dict[str, Any]:
+    """``run`` keyword arguments for calibration: the caller's diffrax objects, tuned for speed.
+
+    Defaults (see ``docs/gradient-performance.md``): ``diffrax.Bosh3()``, a PI controller at
+    ``rtol = atol = 1.4e-4`` (summer2gen's default tolerance, which the original calibrated
+    with) told about the yearly mixing jumps, and ``RecursiveCheckpointAdjoint(checkpoints=
+    1024)``. The step size here is limited by stability, not tolerance (the fastest Jacobian
+    eigenvalue is about -10 per year in the posterior), and Bosh3 covers a year with fewer
+    vector-field evaluations than Dopri5 at that limit. Against a 1e-10 reference gradient at
+    the MAP and 24 published-posterior draws this is more accurate than the original's Dopri5
+    setting (median relative error 0.05% against 0.33%, worst 0.5% against 8.6%), and its
+    reverse-mode gradient was finite at all 256 prior design points and all 25 draws, where
+    Dopri5's was NaN at 43 and 1. 1,024 checkpoints cover every step of a
+    plausible solve, so the reverse pass does not recompute the forward one. ``max_steps``
+    caps the cost of a pathological proposal (summer4's default, 64 per year, is 11,840) and
+    scores it as a failed solve.
+    """
+    import diffrax
+
+    from summer4.solvers import Diffrax
+
+    controller = diffrax.PIDController(
+        rtol=rtol, atol=rtol, jump_ts=MIXING_JUMPS, **PI_COEFFICIENTS
+    )
+    backend = Diffrax(
+        diffrax.Bosh3() if solver is None else solver,
+        stepsize_controller=controller,
+        adjoint=(
+            diffrax.RecursiveCheckpointAdjoint(checkpoints=1024) if adjoint is None else adjoint
+        ),
+    )
+    return {"solver": backend, "max_steps": max_steps}
+
+
+CALIBRATION_SOLVER: dict[str, Any] = calibration_solver()
+
+# The original's calibration solver: summer2gen's default Dopri5 at ``rtol = atol = 1.4e-4``,
+# stepping across the mixing jumps. Its log density is within 0.011 nats of a 1e-10 solve; its
+# gradient within 0.33% (median over 25 posterior draws; 8.6% at worst). Kept for comparison.
+ORIGINAL_CALIBRATION_SOLVER: dict[str, Any] = {
     "solver": "dopri5",
     "rtol": 1.4e-4,
     "atol": 1.4e-4,
@@ -217,19 +267,26 @@ TIGHT_SOLVER: dict[str, Any] = {"solver": "dopri5", "rtol": 1e-8, "atol": 1e-8, 
 
 
 def forward_mode_solver(solver: Mapping[str, Any] | None = None) -> dict[str, Any]:
-    """``solver`` (default :data:`CALIBRATION_SOLVER`) with diffrax's forward-mode adjoint.
+    """``solver`` with diffrax's forward-mode adjoint (default: :func:`calibration_solver`'s).
 
-    Reverse-mode gradients of the adaptive solve are NaN wherever a *rejected* trial step
-    evaluated the vector field at an invalid state (``0 * nan`` in the backward pass): 17% of
-    256 prior design points, none of 96 published posterior draws. Forward mode discards the
-    rejected step's tangent instead, so it stays finite; it costs about 1.5x a reverse-mode
-    gradient here. See docs/summer4-workarounds.md, S5.
+    ``solver`` is a named spec (``{"solver": "dopri5", "rtol": ..., "atol": ...}``); without one
+    this is ``calibration_solver(adjoint=diffrax.ForwardMode())``.
+
+    With the original's Dopri5 setting, reverse-mode gradients of the adaptive solve are NaN at
+    17% of 256 prior design points (none of 96 published posterior draws, but 1 of another 25),
+    apparently where a *rejected* trial step evaluated the vector field at an invalid state
+    (``0 * nan`` in the backward pass). Forward mode discards the rejected step's tangent
+    instead, so it stays finite; it costs about 1.5x a reverse-mode gradient here. The Bosh3
+    calibration solver's reverse-mode gradient was finite at all of those points. See
+    docs/summer4-workarounds.md, S5.
     """
     import diffrax
 
     from summer4.solvers import Diffrax
 
-    spec = dict(CALIBRATION_SOLVER if solver is None else solver)
+    if solver is None:
+        return calibration_solver(adjoint=diffrax.ForwardMode())
+    spec = dict(solver)
     controller = diffrax.PIDController(rtol=spec.pop("rtol"), atol=spec.pop("atol"))
     name = spec.pop("solver")
     solvers = {"dopri5": diffrax.Dopri5, "tsit5": diffrax.Tsit5, "heun": diffrax.Heun}
@@ -268,11 +325,14 @@ def with_params(setup: CalibrationSetup, overrides: Mapping[str, float]) -> Cali
 
 __all__ = [
     "CALIBRATION_SOLVER",
+    "MIXING_JUMPS",
+    "ORIGINAL_CALIBRATION_SOLVER",
     "CalibrationSetup",
     "SENSITIVITY_ANALYSES",
     "SOLVER_KWARGS",
     "TargetSpec",
     "bayesian_model",
+    "calibration_solver",
     "calibration_setup",
     "target_specs",
     "with_params",
