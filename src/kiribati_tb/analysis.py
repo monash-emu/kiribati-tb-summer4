@@ -305,3 +305,123 @@ def _plain(value: Any) -> Any:
     if isinstance(value, np.generic):
         return value.item()
     return value
+
+
+#: Sensitivity analyses that change only parameters no calibration target depends on, so their
+#: posterior is the base case's: they reuse the base-case draws and run only the scenarios
+#: (:func:`run_reused_analysis`). ``tpt_60`` lowers TPT completion, which acts only inside the
+#: screening programmes; it scored identically to the base case at all 128 draws checked
+#: (``docs/neutra.md``). :func:`same_posterior` re-checks this at run time.
+REUSES_BASE_POSTERIOR: frozenset[str] = frozenset({"tpt_60"})
+
+
+def posterior_draws(idata: Any, *, burn_in: int = 0) -> dict[str, np.ndarray]:
+    """``idata``'s posterior as flat arrays per site, after dropping ``burn_in`` draws per chain."""
+    post = idata.posterior
+    return {name: np.asarray(post[name].values)[:, burn_in:].reshape(-1) for name in post.data_vars}
+
+
+def same_posterior(
+    a: CalibrationSetup,
+    b: CalibrationSetup,
+    draws: Mapping[str, np.ndarray],
+    *,
+    n: int = 32,
+    seed: int = 0,
+    tol: float = 1e-9,
+) -> float:
+    """Check that ``a`` and ``b`` give the same log density at ``n`` of ``draws``.
+
+    Returns the largest absolute difference; raises ``ValueError`` if it exceeds ``tol`` (in
+    nats, relative to the larger magnitude) or if the two setups calibrate different sites.
+    """
+    import jax
+
+    bm_a = bayesian_model(a, t1=CALIBRATION_END)
+    bm_b = bayesian_model(b, t1=CALIBRATION_END)
+    sites = sorted(bm_a.prior_names())
+    if sites != sorted(bm_b.prior_names()):
+        raise ValueError("The two setups calibrate different parameters.")
+    total = len(next(iter(draws.values())))
+    rows = np.random.default_rng(seed).choice(total, size=min(n, total), replace=False)
+    density_a, density_b = jax.jit(bm_a.log_density), jax.jit(bm_b.log_density)
+    worst = 0.0
+    for i in rows:
+        z = bm_a.unconstrain({s: float(draws[s][i]) for s in sites})
+        la, lb = float(density_a(z)), float(density_b(z))
+        diff = abs(la - lb)
+        if not np.isfinite(diff) or diff > tol * max(1.0, abs(la), abs(lb)):
+            raise ValueError(
+                f"Posteriors differ at draw {i}: log density {la:.6f} vs {lb:.6f}; "
+                "this analysis must be calibrated, not reused."
+            )
+        worst = max(worst, diff)
+    return worst
+
+
+def run_reused_analysis(
+    folder: Path,
+    posterior: Path,
+    *,
+    sensitivity_analysis: str,
+    burn_in: int = 0,
+    full_runs_samples: int = 1000,
+    seed: int = 0,
+    scenario_ids: Sequence[str] | None = None,
+    check_draws: int = 32,
+) -> Any:
+    """Run a sensitivity analysis's scenarios on the base-case posterior, without recalibrating.
+
+    Only for analyses in :data:`REUSES_BASE_POSTERIOR`. ``posterior`` is a base-case
+    ``idata.nc`` (for example a converged reference run's ``mcmc/idata.nc``); ``burn_in``
+    drops that many draws per chain first. :func:`same_posterior` confirms at ``check_draws``
+    draws that the analysis's posterior equals the base case's before anything is run. Writes
+    the same files as :func:`run_full_analysis`, with the source posterior recorded in
+    ``details.yaml``.
+    """
+    import numpyro  # noqa: F401 - import before arviz; see docs/summer4-workarounds.md, S4
+    import arviz as az
+
+    from kiribati_tb.calibration import calibration_setup
+    from kiribati_tb.scenarios import SCENARIOS
+
+    if sensitivity_analysis not in REUSES_BASE_POSTERIOR:
+        raise ValueError(
+            f"{sensitivity_analysis!r} changes the posterior; calibrate it with run_full_analysis."
+        )
+    folder.mkdir(parents=True, exist_ok=True)
+    idata = az.from_netcdf(posterior)
+    base = calibration_setup()
+    setup = calibration_setup(sensitivity_analysis)
+    worst = same_posterior(
+        base, setup, posterior_draws(idata, burn_in=burn_in), n=check_draws, seed=seed
+    )
+    print(
+        f"[analysis] {sensitivity_analysis}: posterior equals the base case's at {check_draws} "
+        f"draws (largest difference {worst:.2e} nats); reusing {posterior}",
+        flush=True,
+    )
+    idata.to_netcdf(folder / "idata.nc")
+    ids = [s.sc_id for s in SCENARIOS] if scenario_ids is None else list(scenario_ids)
+    start = time.time()
+    runs = run_scenarios(setup, idata, ids, n=full_runs_samples, burn_in=burn_in, seed=seed)
+    write_full_runs(
+        runs,
+        folder,
+        times={
+            "calibration_time": "0 sec (base-case posterior reused)",
+            "full_runs_time": f"{round(time.time() - start)} sec ({full_runs_samples} draws)",
+        },
+        model_config={
+            "heterogeneous_mixing": setup.config.heterogeneous_mixing,
+            "sensitivity_analysis": sensitivity_analysis,
+            "param_overrides": {},
+            "posterior_reused_from": str(posterior),
+            "posterior_burn_in": burn_in,
+        },
+        analysis_config={
+            "full_runs_samples": full_runs_samples,
+            "same_posterior_check": {"draws": check_draws, "max_abs_diff_nats": worst},
+        },
+    )
+    return runs

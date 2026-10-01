@@ -255,3 +255,40 @@ def test_launcher_run_name_gives_separate_folders_logs_and_jobs() -> None:
         ["bash", str(script), "sa"], env={**env, "RUN": "a b"}, capture_output=True, text=True
     )
     assert bad.returncode != 0
+
+
+def test_tpt_60_driver_refuses_to_start_without_a_base_posterior() -> None:
+    script = REPO_ROOT / "scripts" / "cluster" / "massiverun_sas.py"
+    result = subprocess.run(
+        [sys.executable, str(script), "1", "1"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert "--base-posterior" in result.stderr
+
+
+def test_only_posterior_preserving_analyses_reuse_the_base_case() -> None:
+    from kiribati_tb.analysis import REUSES_BASE_POSTERIOR, run_reused_analysis
+
+    assert REUSES_BASE_POSTERIOR == {"tpt_60"}
+    with pytest.raises(ValueError, match="changes the posterior"):
+        run_reused_analysis(
+            Path("unused"), Path("unused.nc"), sensitivity_analysis="subclinical_50"
+        )
+
+
+@pytest.mark.slow
+def test_tpt_60_scores_like_the_base_case_and_subclinical_50_does_not() -> None:
+    from kiribati_tb.analysis import posterior_draws, same_posterior
+    from kiribati_tb.calibration import calibration_setup
+
+    import arviz as az
+
+    published = az.from_netcdf(REPO_ROOT / "reference" / "published" / "idata.nc")
+    draws = posterior_draws(published, burn_in=10000)
+    base = calibration_setup()
+    assert same_posterior(base, calibration_setup("tpt_60"), draws, n=4) < 1e-9
+    with pytest.raises(ValueError, match="Posteriors differ"):
+        same_posterior(base, calibration_setup("subclinical_50"), draws, n=4)

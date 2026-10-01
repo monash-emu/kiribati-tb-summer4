@@ -127,6 +127,14 @@ repository root with `scripts/cluster/submit.sh <template>`, which creates
 `outputs/cluster/logs/` first (SLURM does not). Each task writes to
 `outputs/cluster/<analysis>/task_<i>/` and resumes from its checkpoints when resubmitted.
 
+The `tpt_60` sensitivity analysis is not recalibrated: TPT completion affects no calibration
+target, so its posterior is the base case's (`kiribati_tb.analysis.REUSES_BASE_POSTERIOR`). Its
+task reuses a base-case posterior, checks at 32 draws that it scores identically, and runs only
+the scenarios. Pass the posterior when submitting, e.g.
+`BASE_POSTERIOR=outputs/reference/r2/nuts_td8/mcmc/idata.nc scripts/cluster/submit.sh scripts/cluster/array_job_sas.sh`
+(add `BASE_BURN_IN=<draws per chain>` for a file that still holds warmup draws, such as the
+published one at 10000). Without it, that task exits with a message and the other two run.
+
 ## Licence
 
 BSD-2-Clause. The data under `data/` and the original model under `reference/tbh/` are copied

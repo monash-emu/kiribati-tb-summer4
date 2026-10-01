@@ -38,6 +38,13 @@ export PYTHONUNBUFFERED=1
 # Stagger task starts so sixteen tasks do not resolve the pixi environment at once.
 sleep $((SLURM_ARRAY_TASK_ID * 10))
 
-pixi run python scripts/cluster/massiverun_sas.py $SLURM_ARRAY_JOB_ID $SLURM_ARRAY_TASK_ID
+# Task 1 (tpt_60) reuses the base-case posterior instead of recalibrating: submit with
+# BASE_POSTERIOR=<path to a base-case idata.nc> (and BASE_BURN_IN=<draws per chain> if it
+# still contains warmup draws), e.g.
+#   BASE_POSTERIOR=outputs/reference/r2/nuts_td8/mcmc/idata.nc sbatch scripts/cluster/array_job_sas.sh
+# Without it, task 1 exits at once with a message; tasks 2 and 3 calibrate as before.
+pixi run python scripts/cluster/massiverun_sas.py $SLURM_ARRAY_JOB_ID $SLURM_ARRAY_TASK_ID \
+    ${BASE_POSTERIOR:+--base-posterior "$BASE_POSTERIOR"} \
+    ${BASE_BURN_IN:+--base-burn-in "$BASE_BURN_IN"}
 
 log "Job completed"
