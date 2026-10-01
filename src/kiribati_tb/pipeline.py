@@ -316,6 +316,12 @@ def sample_chunks(
             return decision
 
 
+def _second_half(values: Any) -> np.ndarray:
+    """The second half of ``(chain, draw, ...)`` draws, by the number of draws stored."""
+    arr = np.asarray(values)
+    return arr[:, arr.shape[1] // 2 :]
+
+
 def diagnostics(samples: Mapping[str, np.ndarray]) -> pd.DataFrame:
     """Rank-normalised split R-hat, bulk and tail ESS per site (arviz), ``(chain, draw)`` arrays."""
     import arviz as az
@@ -627,10 +633,11 @@ class StagedWarmup:
         draws = mcmc.get_samples(group_by_chain=True)
         if not isinstance(draws, Mapping):  # a kernel on a flat potential: one array
             draws = {"z": draws}
-        half = {name: np.asarray(v)[:, n // 2 :] for name, v in draws.items()}
+        # Second half of the draws actually kept: a thinned kernel (SA keeps every 10th)
+        # stores n // thinning draws per chain, not n.
+        half = {name: _second_half(v) for name, v in draws.items()}
         extra = {
-            name: np.asarray(v)[:, n // 2 :]
-            for name, v in mcmc.get_extra_fields(group_by_chain=True).items()
+            name: _second_half(v) for name, v in mcmc.get_extra_fields(group_by_chain=True).items()
         }
         adapt = getattr(mcmc.post_warmup_state, "adapt_state", None)
         steps = (

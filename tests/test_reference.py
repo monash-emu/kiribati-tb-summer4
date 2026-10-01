@@ -209,3 +209,26 @@ def test_launcher_submits_each_arm_with_its_resources() -> None:
         text=True,
     )
     assert bad.returncode != 0
+
+
+def test_thinned_warmup_round_reports_diagnostics(tmp_path: Path) -> None:
+    """A thinned kernel stores ``n // thinning`` warmup draws; the round summary must use them.
+
+    Regression: the SA arm (20,000 warmup iterations, thinning 10) crashed on MASSIVE slicing
+    its 2,000 stored draws per chain from position 10,000, leaving an empty array.
+    """
+    bm = ToyModel()
+    config = replace(toy_config("sa"), warmup_rounds=(200,), thinning=10)
+
+    def build(n: int, metric: Any, step: float) -> Any:
+        return make_mcmc(bm, config, n, inverse_mass_matrix=metric, step_size=step)
+
+    staged = StagedWarmup(
+        build, tmp_path, rounds=config.warmup_rounds, extra_fields=KERNEL_FIELDS["sa"]
+    )
+    init = {"x": np.linspace(-1, 1, config.num_chains), "y": np.linspace(1, -1, config.num_chains)}
+    staged.run(init, None, seed=3)
+    row = staged.rows[-1]
+    assert row["num_warmup"] == 200
+    assert np.isfinite(row["rhat_max"])
+    assert (tmp_path / "warmup.pkl").exists()

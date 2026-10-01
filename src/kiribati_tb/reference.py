@@ -95,7 +95,8 @@ def reference_config(arm: str, *, smoke: bool = False) -> PipelineConfig:
         # minutes (a depth-8 tree costs up to 255 gradients, minutes per iteration here).
         max_tree_depth=min(config.max_tree_depth, 3),
         chunk=4 if config.kernel == "nuts" else 20,
-        thinning=1,
+        # Keep thinning on (at 2) so the smoke run takes the thinned arm's code path.
+        thinning=min(config.thinning, 2),
         tight_metric=False,
         criteria=replace(criteria, max_samples=8 if config.kernel == "nuts" else 40),
     )
