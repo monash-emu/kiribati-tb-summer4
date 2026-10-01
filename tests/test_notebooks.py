@@ -27,4 +27,12 @@ def test_notebook_executes(path: Path) -> None:
     from nbclient import NotebookClient
 
     nb = nbformat.read(path, as_version=4)
+    # Gate notebooks over hours-long runs list the outputs they read; skip until they exist.
+    missing = [
+        p
+        for p in nb.metadata.get("kiribati", {}).get("requires", [])
+        if not (REPO_ROOT / p).exists()
+    ]
+    if missing:
+        pytest.skip(f"{path.name} needs {missing}; see its first cell for the commands")
     NotebookClient(nb, timeout=3600, resources={"metadata": {"path": str(path.parent)}}).execute()

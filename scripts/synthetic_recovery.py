@@ -73,7 +73,7 @@ def main() -> None:
         num_samples=args.samples,
         num_chains=args.walkers,
         seed=args.seed,
-    )
+    ).idata
     elapsed = time.time() - start
     OUT.mkdir(parents=True, exist_ok=True)
     idata.to_netcdf(OUT / "idata.nc")

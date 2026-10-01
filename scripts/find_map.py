@@ -38,7 +38,7 @@ def main() -> None:
     z0 = bm.unconstrain(start)
     density = jax.jit(bm.log_density)
     t0 = time.time()
-    fitted = bm.find_map(z0, steps=args.steps, optimizer=optax.adam(args.lr))
+    fitted = bm.find_map(z0, steps=args.steps, optimizer=optax.adam(args.lr)).best_params
     elapsed = time.time() - t0
     fitted = {k: float(v) for k, v in fitted.items()}
     params = {**setup.params, **fitted}

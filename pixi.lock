@@ -333,7 +333,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/websocket-client-1.9.2-pyh5ded981_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/zipp-4.1.0-pyhcf101f3_0.conda
       - pypi: ./
-      - pypi: git+https://github.com/monash-emu/summer4.git?tag=v0.2.0a5#a842c5958462cf87230065e0a13fd38174f9a21f
+      - pypi: git+https://github.com/monash-emu/summer4.git?rev=c9548d57dc15e12e5017c117918bb7f1bd0165eb#c9548d57dc15e12e5017c117918bb7f1bd0165eb
       - pypi: https://files.pythonhosted.org/packages/23/93/4e45e37f26c820216704b36b8e67cc55c490a7abd287a78a26a2c0e21386/lazy_loader-0.6-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/23/cd/066e86230ae37ed0be70aae89aabf03ca8d9f39c8aea0dec8029455b5540/opt_einsum-3.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/24/18/d8544811ab076f876c4892b3714f5b0dad335e1dc33aef826df431b8325d/plotly-6.9.0-py3-none-any.whl
@@ -628,7 +628,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zlib-ng-2.3.3-h31dac16_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zstd-1.5.7-hf451053_7.conda
       - pypi: ./
-      - pypi: git+https://github.com/monash-emu/summer4.git?tag=v0.2.0a5#a842c5958462cf87230065e0a13fd38174f9a21f
+      - pypi: git+https://github.com/monash-emu/summer4.git?rev=c9548d57dc15e12e5017c117918bb7f1bd0165eb#c9548d57dc15e12e5017c117918bb7f1bd0165eb
       - pypi: https://files.pythonhosted.org/packages/23/93/4e45e37f26c820216704b36b8e67cc55c490a7abd287a78a26a2c0e21386/lazy_loader-0.6-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/23/cd/066e86230ae37ed0be70aae89aabf03ca8d9f39c8aea0dec8029455b5540/opt_einsum-3.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/24/18/d8544811ab076f876c4892b3714f5b0dad335e1dc33aef826df431b8325d/plotly-6.9.0-py3-none-any.whl
@@ -5270,7 +5270,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/jsonschema?source=compressed-mapping
+  - pkg:pypi/jsonschema?source=hash-mapping
   run_exports: {}
   size: 82084
   timestamp: 1787579299493
@@ -9036,7 +9036,7 @@ packages:
   - sphinx-rtd-theme>=0.5.1,<0.6.0 ; extra == 'docs'
   - sphinxcontrib-napoleon>=0.7,<0.8 ; extra == 'docs'
   requires_python: '>=3.10.0'
-- pypi: git+https://github.com/monash-emu/summer4.git?tag=v0.2.0a5#a842c5958462cf87230065e0a13fd38174f9a21f
+- pypi: git+https://github.com/monash-emu/summer4.git?rev=c9548d57dc15e12e5017c117918bb7f1bd0165eb#c9548d57dc15e12e5017c117918bb7f1bd0165eb
   name: summer4
   version: 0.2.0a5
   requires_dist:
