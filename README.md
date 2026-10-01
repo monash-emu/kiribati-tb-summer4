@@ -99,6 +99,10 @@ cat outputs/reference/nuts_td8/mcmc/diagnostics.json     # latest R-hat / ESS pe
 # 5. A job that stopped for its deadline (or was killed) continues where it left off:
 ACCOUNT=<account> scripts/cluster/submit_reference.sh nuts_td8
 
+# 5b. A fresh, separate set of runs (new folders, logs and job names) beside earlier ones:
+RUN=r2 ACCOUNT=<account> scripts/cluster/submit_reference.sh   # outputs/reference/r2/<arm>/
+pixi run python scripts/compare_reference.py --root outputs/reference/r2
+
 # 6. Compare whatever has finished (partial runs included) with each other and the paper's
 #    posterior, and project them through the scenarios; then open notebook 06.
 pixi run python scripts/compare_reference.py

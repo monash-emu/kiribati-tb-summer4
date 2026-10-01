@@ -20,12 +20,14 @@ set -euo pipefail
 
 cd "${SLURM_SUBMIT_DIR}"
 mkdir -p outputs/cluster/logs
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] arm=${ARM} job=${SLURM_JOB_ID} cpus=${SLURM_CPUS_PER_TASK:-?} host=$(hostname)"
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] arm=${ARM} out=${OUT:-default} job=${SLURM_JOB_ID} cpus=${SLURM_CPUS_PER_TASK:-?} host=$(hostname)"
 
 # Unbuffered output so progress bars and checkpoint lines reach the log as they happen.
 export PYTHONUNBUFFERED=1
 export OMP_NUM_THREADS=1
 
-pixi run python scripts/reference_run.py --arm "${ARM}" --max-hours "${MAX_HOURS}"
+# OUT (set by submit_reference.sh) is the arm's output folder; it resumes if it exists.
+pixi run python scripts/reference_run.py --arm "${ARM}" --max-hours "${MAX_HOURS}" \
+    ${OUT:+--out "${OUT}"}
 
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] arm=${ARM} done"

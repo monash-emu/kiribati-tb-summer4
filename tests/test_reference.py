@@ -232,3 +232,26 @@ def test_thinned_warmup_round_reports_diagnostics(tmp_path: Path) -> None:
     assert row["num_warmup"] == 200
     assert np.isfinite(row["rhat_max"])
     assert (tmp_path / "warmup.pkl").exists()
+
+
+def test_launcher_run_name_gives_separate_folders_logs_and_jobs() -> None:
+    script = REPO_ROOT / "scripts" / "cluster" / "submit_reference.sh"
+    env = {"SBATCH": "echo", "PATH": "/usr/bin:/bin"}
+    default = subprocess.run(
+        ["bash", str(script), "sa"], env=env, capture_output=True, text=True, check=True
+    ).stdout
+    assert "OUT=outputs/reference/sa " in default and "--job-name=ref_sa " in default
+    named = subprocess.run(
+        ["bash", str(script), "sa"],
+        env={**env, "RUN": "r2"},
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout
+    assert "OUT=outputs/reference/r2/sa " in named
+    assert "--job-name=ref_r2_sa " in named
+    assert "--output=outputs/cluster/logs/ref_r2_sa_%j.out" in named
+    bad = subprocess.run(
+        ["bash", str(script), "sa"], env={**env, "RUN": "a b"}, capture_output=True, text=True
+    )
+    assert bad.returncode != 0
