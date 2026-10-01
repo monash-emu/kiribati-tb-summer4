@@ -1,0 +1,4285 @@
+{
+  "flow": {
+    "steps": 1500,
+    "failed_steps": 0,
+    "checks": [
+      {
+        "step": 0,
+        "elbo": -85.36740942024355,
+        "k_hat": 0.3454361624668794,
+        "is_ess_frac": 0.1205885309791777,
+        "failed": 0.0
+      },
+      {
+        "step": 100,
+        "elbo": -53.0562437620001,
+        "k_hat": 0.7920641674547843,
+        "is_ess_frac": 0.1044594201478707,
+        "failed": 0.0
+      },
+      {
+        "step": 200,
+        "elbo": -52.09533623664956,
+        "k_hat": 0.7270543467071057,
+        "is_ess_frac": 0.1027664279698744,
+        "failed": 0.0
+      },
+      {
+        "step": 300,
+        "elbo": -52.00187312181792,
+        "k_hat": 0.5908315605174905,
+        "is_ess_frac": 0.1269789880290421,
+        "failed": 0.0
+      },
+      {
+        "step": 400,
+        "elbo": -51.8204195245289,
+        "k_hat": 0.842883914685169,
+        "is_ess_frac": 0.0577195206026141,
+        "failed": 0.0
+      },
+      {
+        "step": 500,
+        "elbo": -50.86024231036863,
+        "k_hat": 0.7524056361174848,
+        "is_ess_frac": 0.2348064975032758,
+        "failed": 0.0
+      },
+      {
+        "step": 600,
+        "elbo": -52.0569068996295,
+        "k_hat": 0.3318232944979303,
+        "is_ess_frac": 0.1627436473471135,
+        "failed": 0.0
+      },
+      {
+        "step": 700,
+        "elbo": -50.861139109475275,
+        "k_hat": 0.7351997345285874,
+        "is_ess_frac": 0.1253928547288411,
+        "failed": 0.0
+      },
+      {
+        "step": 800,
+        "elbo": -50.85049800519806,
+        "k_hat": 1.1725569807171317,
+        "is_ess_frac": 0.0590279683185448,
+        "failed": 0.0
+      },
+      {
+        "step": 900,
+        "elbo": -50.66889988409578,
+        "k_hat": 0.4959645627895266,
+        "is_ess_frac": 0.1816360857811479,
+        "failed": 0.0
+      },
+      {
+        "step": 1000,
+        "elbo": -50.43006940095285,
+        "k_hat": 1.463652043971868,
+        "is_ess_frac": 0.0219087434959524,
+        "failed": 0.0
+      },
+      {
+        "step": 1100,
+        "elbo": -51.701612483283526,
+        "k_hat": 1.010722605616111,
+        "is_ess_frac": 0.0547155017441182,
+        "failed": 0.0
+      },
+      {
+        "step": 1200,
+        "elbo": -50.6348271512212,
+        "k_hat": 1.153795289517767,
+        "is_ess_frac": 0.040650684610967,
+        "failed": 0.0
+      },
+      {
+        "step": 1300,
+        "elbo": -51.21527464847626,
+        "k_hat": 1.0378173465861735,
+        "is_ess_frac": 0.0465127289761743,
+        "failed": 0.0
+      },
+      {
+        "step": 1400,
+        "elbo": -50.54607622061663,
+        "k_hat": 1.0099983190534405,
+        "is_ess_frac": 0.1160222479922363,
+        "failed": 0.0
+      },
+      {
+        "step": 1500,
+        "elbo": -50.37569508241004,
+        "k_hat": 0.3322975675245553,
+        "is_ess_frac": 0.1502853111767165,
+        "failed": 0.0
+      }
+    ]
+  },
+  "sampler": {
+    "neutra": {
+      "warmup": [
+        {
+          "round": 1,
+          "num_warmup": 100,
+          "seconds": 114.1,
+          "seconds_per_iteration": 1.14,
+          "leapfrog_mean": 55.445,
+          "rhat_max": 1.2250634652231716,
+          "step_size_min": 0.0146140868222735,
+          "step_size_max": 0.1006653299714207,
+          "step_size_ratio": 6.888239490817534,
+          "accept_mean": 0.767083620865546,
+          "target_accept_prob": 0.8,
+          "divergence_frac": 0.185,
+          "treedepth_frac": 0.035,
+          "failed": "rhat, step_size_ratio, divergences",
+          "done": false
+        },
+        {
+          "round": 2,
+          "num_warmup": 100,
+          "seconds": 44.8,
+          "seconds_per_iteration": 0.45,
+          "leapfrog_mean": 55.13,
+          "rhat_max": 1.1548628619338126,
+          "step_size_min": 0.0708193629767481,
+          "step_size_max": 0.1374755868042442,
+          "step_size_ratio": 1.941214676689213,
+          "accept_mean": 0.7845822935672147,
+          "target_accept_prob": 0.8,
+          "divergence_frac": 0.145,
+          "treedepth_frac": 0.03,
+          "failed": "rhat, divergences",
+          "done": false
+        }
+      ],
+      "progress": [
+        {
+          "chunk": 1,
+          "draws_per_chain": 50,
+          "rhat_max": 1.6862673158625865,
+          "ess_bulk_min": 7.2085205328873645,
+          "ess_tail_min": 12.635036957483097,
+          "divergence_frac": 0.31,
+          "seconds": 1789.895698459004,
+          "decision": NaN
+        },
+        {
+          "chunk": 2,
+          "draws_per_chain": 100,
+          "rhat_max": 1.3884402604373938,
+          "ess_bulk_min": 10.054677727532988,
+          "ess_tail_min": 8.13507215271969,
+          "divergence_frac": 0.305,
+          "seconds": 3392.6136637510062,
+          "decision": NaN
+        },
+        {
+          "chunk": 3,
+          "draws_per_chain": 150,
+          "rhat_max": 1.2121566396045564,
+          "ess_bulk_min": 13.63469166042642,
+          "ess_tail_min": 12.122712429602716,
+          "divergence_frac": 0.26,
+          "seconds": 5218.266577209011,
+          "decision": "max_samples"
+        }
+      ],
+      "summary": {
+        "decision": "max_samples",
+        "draws_per_chain": 150,
+        "divergence_frac": 0.26,
+        "flow": {
+          "steps": 1500,
+          "seconds": 2549.068349459005,
+          "cpu_seconds": 2875.7698729999993,
+          "last_check": {
+            "step": 1500,
+            "loss_median": 51.2032911415514,
+            "loss_mean": 51.609926098294885,
+            "failed_steps": 0,
+            "skipped_updates": 1,
+            "seconds_per_step": 1.3911724558201968,
+            "seconds": 2549.068349459005,
+            "cpu_seconds": 2875.7698729999993,
+            "elbo": -50.37569508241004,
+            "k_hat": 0.3322975675245553,
+            "is_ess_frac": 0.15028531117671654,
+            "failed": 0,
+            "check_seconds": 14.040811333994498
+          }
+        },
+        "warmup_rounds": 2,
+        "sampling": {
+          "ess_min": 12.122712429602716,
+          "gradients": 22720.0,
+          "gradients_per_ess": 1874.1680240240241,
+          "leapfrog_mean": 37.86666666666667,
+          "tree_depth_mean": 4.9062782277427965,
+          "rhat_max": 1.2121566396045564
+        },
+        "seconds": {
+          "flow": 3047.0519799999893,
+          "warmup": 0.0020456660131458193,
+          "sample": 5223.197205416989
+        }
+      },
+      "stage_seconds": {
+        "flow": 3047.0519799999893,
+        "warmup": 0.0020456660131458193,
+        "sample": 5223.197205416989
+      },
+      "num_steps": {
+        "mean": 37.86666666666667,
+        "median": 31.0,
+        "max": 180,
+        "tree_depth_hist": {
+          "1": 1,
+          "2": 29,
+          "3": 47,
+          "4": 51,
+          "5": 233,
+          "6": 228,
+          "7": 10,
+          "8": 1
+        }
+      },
+      "efficiency": {
+        "ess_min": 12.122712429602716,
+        "gradients": 22720.0,
+        "gradients_per_ess": 1874.1680240240241,
+        "leapfrog_mean": 37.86666666666667,
+        "tree_depth_mean": 4.9062782277427965,
+        "rhat_max": 1.2121566396045564
+      }
+    },
+    "shear_nuts": {
+      "warmup": [
+        {
+          "round": 1,
+          "num_warmup": 100,
+          "seconds": 72.9,
+          "seconds_per_iteration": 0.73,
+          "leapfrog_mean": 58.91,
+          "rhat_max": 1.359578001511651,
+          "step_size_min": 0.0858892600314564,
+          "step_size_max": 0.1187137792669693,
+          "step_size_ratio": 1.3821725699288945,
+          "accept_mean": 0.7761231063919058,
+          "target_accept_prob": 0.8,
+          "divergence_frac": 0.175,
+          "treedepth_frac": 0.04,
+          "failed": "rhat, divergences",
+          "done": false
+        },
+        {
+          "round": 2,
+          "num_warmup": 100,
+          "seconds": 37.5,
+          "seconds_per_iteration": 0.37,
+          "leapfrog_mean": 55.825,
+          "rhat_max": 1.1255346646376665,
+          "step_size_min": 0.0544614466132064,
+          "step_size_max": 0.0919866237441281,
+          "step_size_ratio": 1.6890227760094445,
+          "accept_mean": 0.7859543186581521,
+          "target_accept_prob": 0.8,
+          "divergence_frac": 0.07,
+          "treedepth_frac": 0.015,
+          "failed": "rhat, divergences",
+          "done": true
+        }
+      ],
+      "progress": [
+        {
+          "chunk": 1,
+          "draws_per_chain": 50,
+          "rhat_max": 1.0721235807773473,
+          "ess_bulk_min": 57.56416149925158,
+          "ess_tail_min": 72.19959252283684,
+          "divergence_frac": 0.055,
+          "seconds": 5795.576415958989,
+          "decision": NaN
+        },
+        {
+          "chunk": 2,
+          "draws_per_chain": 100,
+          "rhat_max": 1.1099123027572864,
+          "ess_bulk_min": 36.83212478727821,
+          "ess_tail_min": 64.71936508662934,
+          "divergence_frac": 0.0725,
+          "seconds": 9306.335849708994,
+          "decision": NaN
+        }
+      ],
+      "summary": {
+        "decision": "divergences",
+        "draws_per_chain": 50,
+        "divergence_frac": 0.055,
+        "flow": null,
+        "warmup_rounds": 2,
+        "sampling": {
+          "ess_min": 57.56416149925158,
+          "gradients": 17260.0,
+          "gradients_per_ess": 299.83933667173113,
+          "leapfrog_mean": 86.3,
+          "tree_depth_mean": 6.304524122712151,
+          "rhat_max": 1.0721235807773473
+        },
+        "seconds": {
+          "warmup": 9203.826525250013,
+          "sample": 5798.399491874996
+        }
+      },
+      "stage_seconds": {
+        "warmup": 9203.826525250013,
+        "sample": 5798.399491874996
+      },
+      "num_steps": {
+        "mean": 79.1325,
+        "median": 63.0,
+        "max": 255,
+        "tree_depth_hist": {
+          "2": 5,
+          "3": 10,
+          "4": 6,
+          "5": 27,
+          "6": 218,
+          "7": 128,
+          "8": 6
+        }
+      },
+      "efficiency": {
+        "ess_min": 36.832124787278204,
+        "gradients": 31653.0,
+        "gradients_per_ess": 859.3856635426292,
+        "leapfrog_mean": 79.1325,
+        "tree_depth_mean": 6.080307730158521,
+        "rhat_max": 1.1099123027572864
+      }
+    }
+  },
+  "quantiles": [
+    {
+      "arm": "published",
+      "parameter": "a_spread",
+      "quantile": 0.025,
+      "value": 2.5006256904867286,
+      "mcse": 0.05641793595860545,
+      "ess_bulk": 101.91988398831052,
+      "rhat": 1.0543969826304125
+    },
+    {
+      "arm": "published",
+      "parameter": "a_spread",
+      "quantile": 0.25,
+      "value": 4.229871237876223,
+      "mcse": 0.16902079690272753,
+      "ess_bulk": 101.91988398831052,
+      "rhat": 1.0543969826304125
+    },
+    {
+      "arm": "published",
+      "parameter": "a_spread",
+      "quantile": 0.5,
+      "value": 5.80034732618082,
+      "mcse": 0.23363066332091043,
+      "ess_bulk": 101.91988398831052,
+      "rhat": 1.0543969826304125
+    },
+    {
+      "arm": "published",
+      "parameter": "a_spread",
+      "quantile": 0.75,
+      "value": 8.019040863245744,
+      "mcse": 0.2954682194014815,
+      "ess_bulk": 101.91988398831052,
+      "rhat": 1.0543969826304125
+    },
+    {
+      "arm": "published",
+      "parameter": "a_spread",
+      "quantile": 0.975,
+      "value": 12.81697454690599,
+      "mcse": 0.24527908413216437,
+      "ess_bulk": 101.91988398831052,
+      "rhat": 1.0543969826304125
+    },
+    {
+      "arm": "published",
+      "parameter": "bg_mixing",
+      "quantile": 0.025,
+      "value": 0.010456745826133203,
+      "mcse": 7.811649932164353e-05,
+      "ess_bulk": 37.60383877873781,
+      "rhat": 1.1545586929688119
+    },
+    {
+      "arm": "published",
+      "parameter": "bg_mixing",
+      "quantile": 0.25,
+      "value": 0.013346022461818218,
+      "mcse": 0.0005531389611175812,
+      "ess_bulk": 37.60383877873781,
+      "rhat": 1.1545586929688119
+    },
+    {
+      "arm": "published",
+      "parameter": "bg_mixing",
+      "quantile": 0.5,
+      "value": 0.017701484383244828,
+      "mcse": 0.001546974376291324,
+      "ess_bulk": 37.60383877873781,
+      "rhat": 1.1545586929688119
+    },
+    {
+      "arm": "published",
+      "parameter": "bg_mixing",
+      "quantile": 0.75,
+      "value": 0.02585928121622464,
+      "mcse": 0.0033661283732173922,
+      "ess_bulk": 37.60383877873781,
+      "rhat": 1.1545586929688119
+    },
+    {
+      "arm": "published",
+      "parameter": "bg_mixing",
+      "quantile": 0.975,
+      "value": 0.044601105588246495,
+      "mcse": 0.0012430680108011759,
+      "ess_bulk": 37.60383877873781,
+      "rhat": 1.1545586929688119
+    },
+    {
+      "arm": "published",
+      "parameter": "breakdown_rate",
+      "quantile": 0.025,
+      "value": 0.48510333045470794,
+      "mcse": 0.011564640921116282,
+      "ess_bulk": 310.4743557723088,
+      "rhat": 1.0388884298357524
+    },
+    {
+      "arm": "published",
+      "parameter": "breakdown_rate",
+      "quantile": 0.25,
+      "value": 0.6662624514140008,
+      "mcse": 0.008952569665214238,
+      "ess_bulk": 310.4743557723088,
+      "rhat": 1.0388884298357524
+    },
+    {
+      "arm": "published",
+      "parameter": "breakdown_rate",
+      "quantile": 0.5,
+      "value": 0.7704001184386808,
+      "mcse": 0.007788292467578284,
+      "ess_bulk": 310.4743557723088,
+      "rhat": 1.0388884298357524
+    },
+    {
+      "arm": "published",
+      "parameter": "breakdown_rate",
+      "quantile": 0.75,
+      "value": 0.8637757390422467,
+      "mcse": 0.00751237928453119,
+      "ess_bulk": 310.4743557723088,
+      "rhat": 1.0388884298357524
+    },
+    {
+      "arm": "published",
+      "parameter": "breakdown_rate",
+      "quantile": 0.975,
+      "value": 0.9651795503837005,
+      "mcse": 0.004375288437609315,
+      "ess_bulk": 310.4743557723088,
+      "rhat": 1.0388884298357524
+    },
+    {
+      "arm": "published",
+      "parameter": "clearance_rate",
+      "quantile": 0.025,
+      "value": 0.011915535268472811,
+      "mcse": 0.0004111689184589963,
+      "ess_bulk": 42.680781058425836,
+      "rhat": 1.142192473992973
+    },
+    {
+      "arm": "published",
+      "parameter": "clearance_rate",
+      "quantile": 0.25,
+      "value": 0.02581520061547741,
+      "mcse": 0.003695418370937859,
+      "ess_bulk": 42.680781058425836,
+      "rhat": 1.142192473992973
+    },
+    {
+      "arm": "published",
+      "parameter": "clearance_rate",
+      "quantile": 0.5,
+      "value": 0.044649457124129675,
+      "mcse": 0.005598422299778312,
+      "ess_bulk": 42.680781058425836,
+      "rhat": 1.142192473992973
+    },
+    {
+      "arm": "published",
+      "parameter": "clearance_rate",
+      "quantile": 0.75,
+      "value": 0.06934396221709062,
+      "mcse": 0.006409696210961362,
+      "ess_bulk": 42.680781058425836,
+      "rhat": 1.142192473992973
+    },
+    {
+      "arm": "published",
+      "parameter": "clearance_rate",
+      "quantile": 0.975,
+      "value": 0.096133699444208,
+      "mcse": 0.0008261217087713879,
+      "ess_bulk": 42.680781058425836,
+      "rhat": 1.142192473992973
+    },
+    {
+      "arm": "published",
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.025,
+      "value": 0.7709416003665468,
+      "mcse": 0.018483268082161386,
+      "ess_bulk": 418.71330432421274,
+      "rhat": 1.0320619432598208
+    },
+    {
+      "arm": "published",
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.25,
+      "value": 1.0487271675773338,
+      "mcse": 0.013590181152580483,
+      "ess_bulk": 418.71330432421274,
+      "rhat": 1.0320619432598208
+    },
+    {
+      "arm": "published",
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.5,
+      "value": 1.2163147899709497,
+      "mcse": 0.014897632699562346,
+      "ess_bulk": 418.71330432421274,
+      "rhat": 1.0320619432598208
+    },
+    {
+      "arm": "published",
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.75,
+      "value": 1.4236090903228082,
+      "mcse": 0.016402577092719195,
+      "ess_bulk": 418.71330432421274,
+      "rhat": 1.0320619432598208
+    },
+    {
+      "arm": "published",
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.975,
+      "value": 1.9127952280794123,
+      "mcse": 0.02556431484086852,
+      "ess_bulk": 418.71330432421274,
+      "rhat": 1.0320619432598208
+    },
+    {
+      "arm": "published",
+      "parameter": "infection_pop_scale",
+      "quantile": 0.025,
+      "value": 0.5053052812277519,
+      "mcse": 0.010914577906801975,
+      "ess_bulk": 49.07661269652908,
+      "rhat": 1.127780114562254
+    },
+    {
+      "arm": "published",
+      "parameter": "infection_pop_scale",
+      "quantile": 0.25,
+      "value": 0.717422910466847,
+      "mcse": 0.012621337743822347,
+      "ess_bulk": 49.07661269652908,
+      "rhat": 1.127780114562254
+    },
+    {
+      "arm": "published",
+      "parameter": "infection_pop_scale",
+      "quantile": 0.5,
+      "value": 0.8268286370804706,
+      "mcse": 0.01656244457276629,
+      "ess_bulk": 49.07661269652908,
+      "rhat": 1.127780114562254
+    },
+    {
+      "arm": "published",
+      "parameter": "infection_pop_scale",
+      "quantile": 0.75,
+      "value": 0.9041228907518387,
+      "mcse": 0.015200824988441664,
+      "ess_bulk": 49.07661269652908,
+      "rhat": 1.127780114562254
+    },
+    {
+      "arm": "published",
+      "parameter": "infection_pop_scale",
+      "quantile": 0.975,
+      "value": 0.9765233381760686,
+      "mcse": 0.009478896164966055,
+      "ess_bulk": 49.07661269652908,
+      "rhat": 1.127780114562254
+    },
+    {
+      "arm": "published",
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.025,
+      "value": 1.8489285822194044,
+      "mcse": 0.0538363162506057,
+      "ess_bulk": 91.52986894407414,
+      "rhat": 1.070221926624103
+    },
+    {
+      "arm": "published",
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.25,
+      "value": 2.874804527876795,
+      "mcse": 0.038478715534806085,
+      "ess_bulk": 91.52986894407414,
+      "rhat": 1.070221926624103
+    },
+    {
+      "arm": "published",
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.5,
+      "value": 3.7379684081126308,
+      "mcse": 0.11573452302097498,
+      "ess_bulk": 91.52986894407414,
+      "rhat": 1.070221926624103
+    },
+    {
+      "arm": "published",
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.75,
+      "value": 4.924200517433316,
+      "mcse": 0.28212149350054405,
+      "ess_bulk": 91.52986894407414,
+      "rhat": 1.070221926624103
+    },
+    {
+      "arm": "published",
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.975,
+      "value": 8.145424436108126,
+      "mcse": 0.42422097269504855,
+      "ess_bulk": 91.52986894407414,
+      "rhat": 1.070221926624103
+    },
+    {
+      "arm": "published",
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.025,
+      "value": 7.999829705433218,
+      "mcse": 0.15552662131459138,
+      "ess_bulk": 115.5162236302541,
+      "rhat": 1.0656019552944407
+    },
+    {
+      "arm": "published",
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.25,
+      "value": 12.092138665194707,
+      "mcse": 0.36472794457331936,
+      "ess_bulk": 115.5162236302541,
+      "rhat": 1.0656019552944407
+    },
+    {
+      "arm": "published",
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.5,
+      "value": 14.569589677047407,
+      "mcse": 0.3371116664292684,
+      "ess_bulk": 115.5162236302541,
+      "rhat": 1.0656019552944407
+    },
+    {
+      "arm": "published",
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.75,
+      "value": 16.83180080126912,
+      "mcse": 0.16862129580812102,
+      "ess_bulk": 115.5162236302541,
+      "rhat": 1.0656019552944407
+    },
+    {
+      "arm": "published",
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.975,
+      "value": 19.302231309301277,
+      "mcse": 0.07805633898558284,
+      "ess_bulk": 115.5162236302541,
+      "rhat": 1.0656019552944407
+    },
+    {
+      "arm": "published",
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.025,
+      "value": 1993.294804917624,
+      "mcse": 0.6256343137225713,
+      "ess_bulk": 248.0641209059235,
+      "rhat": 1.0336102770588003
+    },
+    {
+      "arm": "published",
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.25,
+      "value": 2001.962322266852,
+      "mcse": 0.3319191061618767,
+      "ess_bulk": 248.0641209059235,
+      "rhat": 1.0336102770588003
+    },
+    {
+      "arm": "published",
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.5,
+      "value": 2006.8324036403283,
+      "mcse": 0.31170828122162675,
+      "ess_bulk": 248.0641209059235,
+      "rhat": 1.0336102770588003
+    },
+    {
+      "arm": "published",
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.75,
+      "value": 2010.9564449758175,
+      "mcse": 0.3128874255229448,
+      "ess_bulk": 248.0641209059235,
+      "rhat": 1.0336102770588003
+    },
+    {
+      "arm": "published",
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.975,
+      "value": 2017.4262066353028,
+      "mcse": 0.5570382450185889,
+      "ess_bulk": 248.0641209059235,
+      "rhat": 1.0336102770588003
+    },
+    {
+      "arm": "published",
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.025,
+      "value": 0.3131877719061762,
+      "mcse": 0.004050231679189831,
+      "ess_bulk": 46.05643481130709,
+      "rhat": 1.1225708389598261
+    },
+    {
+      "arm": "published",
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.25,
+      "value": 0.3677285023532218,
+      "mcse": 0.009412471450225113,
+      "ess_bulk": 46.05643481130709,
+      "rhat": 1.1225708389598261
+    },
+    {
+      "arm": "published",
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.5,
+      "value": 0.4386424505193476,
+      "mcse": 0.02005210754177783,
+      "ess_bulk": 46.05643481130709,
+      "rhat": 1.1225708389598261
+    },
+    {
+      "arm": "published",
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.75,
+      "value": 0.554800753808042,
+      "mcse": 0.03269637820714377,
+      "ess_bulk": 46.05643481130709,
+      "rhat": 1.1225708389598261
+    },
+    {
+      "arm": "published",
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.975,
+      "value": 0.846792877415951,
+      "mcse": 0.02535107573196199,
+      "ess_bulk": 46.05643481130709,
+      "rhat": 1.1225708389598261
+    },
+    {
+      "arm": "published",
+      "parameter": "pc_strength",
+      "quantile": 0.025,
+      "value": 0.023770848502584433,
+      "mcse": 0.003048140205504795,
+      "ess_bulk": 84.72475198289867,
+      "rhat": 1.0893373437143459
+    },
+    {
+      "arm": "published",
+      "parameter": "pc_strength",
+      "quantile": 0.25,
+      "value": 0.11113522566111368,
+      "mcse": 0.016916103709847266,
+      "ess_bulk": 84.72475198289867,
+      "rhat": 1.0893373437143459
+    },
+    {
+      "arm": "published",
+      "parameter": "pc_strength",
+      "quantile": 0.5,
+      "value": 0.23311127134990953,
+      "mcse": 0.02972541846506231,
+      "ess_bulk": 84.72475198289867,
+      "rhat": 1.0893373437143459
+    },
+    {
+      "arm": "published",
+      "parameter": "pc_strength",
+      "quantile": 0.75,
+      "value": 0.43317212320240345,
+      "mcse": 0.02895526395415618,
+      "ess_bulk": 84.72475198289867,
+      "rhat": 1.0893373437143459
+    },
+    {
+      "arm": "published",
+      "parameter": "pc_strength",
+      "quantile": 0.975,
+      "value": 0.8573279897970066,
+      "mcse": 0.024336439658516174,
+      "ess_bulk": 84.72475198289867,
+      "rhat": 1.0893373437143459
+    },
+    {
+      "arm": "published",
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.025,
+      "value": 0.2195472556607868,
+      "mcse": 0.0017407506492304464,
+      "ess_bulk": 333.71743749634805,
+      "rhat": 1.0213183074811392
+    },
+    {
+      "arm": "published",
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.25,
+      "value": 0.2925794908898302,
+      "mcse": 0.004644999338945827,
+      "ess_bulk": 333.71743749634805,
+      "rhat": 1.0213183074811392
+    },
+    {
+      "arm": "published",
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.5,
+      "value": 0.3485058478801595,
+      "mcse": 0.00516623481369477,
+      "ess_bulk": 333.71743749634805,
+      "rhat": 1.0213183074811392
+    },
+    {
+      "arm": "published",
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.75,
+      "value": 0.4077659515181498,
+      "mcse": 0.005457094996979106,
+      "ess_bulk": 333.71743749634805,
+      "rhat": 1.0213183074811392
+    },
+    {
+      "arm": "published",
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.975,
+      "value": 0.48741676632389963,
+      "mcse": 0.003986416338910004,
+      "ess_bulk": 333.71743749634805,
+      "rhat": 1.0213183074811392
+    },
+    {
+      "arm": "published",
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.025,
+      "value": 0.7383160228832871,
+      "mcse": 0.004672055770272909,
+      "ess_bulk": 35.353464040558066,
+      "rhat": 1.1590369227364956
+    },
+    {
+      "arm": "published",
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.25,
+      "value": 0.8095525611086378,
+      "mcse": 0.010156354390007505,
+      "ess_bulk": 35.353464040558066,
+      "rhat": 1.1590369227364956
+    },
+    {
+      "arm": "published",
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.5,
+      "value": 0.8553970382811508,
+      "mcse": 0.010293565957481987,
+      "ess_bulk": 35.353464040558066,
+      "rhat": 1.1590369227364956
+    },
+    {
+      "arm": "published",
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.75,
+      "value": 0.8931769575344507,
+      "mcse": 0.008518221202240384,
+      "ess_bulk": 35.353464040558066,
+      "rhat": 1.1590369227364956
+    },
+    {
+      "arm": "published",
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.975,
+      "value": 0.9259270479762693,
+      "mcse": 0.0012602994313262172,
+      "ess_bulk": 35.353464040558066,
+      "rhat": 1.1590369227364956
+    },
+    {
+      "arm": "published",
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.025,
+      "value": 0.08499350119226652,
+      "mcse": 0.0031340205303344096,
+      "ess_bulk": 34.96960176604673,
+      "rhat": 1.163416274834528
+    },
+    {
+      "arm": "published",
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.25,
+      "value": 0.17183039803605596,
+      "mcse": 0.02484198882787242,
+      "ess_bulk": 34.96960176604673,
+      "rhat": 1.163416274834528
+    },
+    {
+      "arm": "published",
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.5,
+      "value": 0.2644544178284214,
+      "mcse": 0.025381264637395026,
+      "ess_bulk": 34.96960176604673,
+      "rhat": 1.163416274834528
+    },
+    {
+      "arm": "published",
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.75,
+      "value": 0.36717586128941754,
+      "mcse": 0.01772256050532897,
+      "ess_bulk": 34.96960176604673,
+      "rhat": 1.163416274834528
+    },
+    {
+      "arm": "published",
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.975,
+      "value": 0.48699300726935824,
+      "mcse": 0.005191729707083259,
+      "ess_bulk": 34.96960176604673,
+      "rhat": 1.163416274834528
+    },
+    {
+      "arm": "published",
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.025,
+      "value": 0.00022163603328254498,
+      "mcse": 3.0609735847902486e-06,
+      "ess_bulk": 174.4838428191467,
+      "rhat": 1.0465524159550363
+    },
+    {
+      "arm": "published",
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.25,
+      "value": 0.00031054754980173126,
+      "mcse": 1.0017197283206477e-05,
+      "ess_bulk": 174.4838428191467,
+      "rhat": 1.0465524159550363
+    },
+    {
+      "arm": "published",
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.5,
+      "value": 0.0003791657152529298,
+      "mcse": 7.935252640418417e-06,
+      "ess_bulk": 174.4838428191467,
+      "rhat": 1.0465524159550363
+    },
+    {
+      "arm": "published",
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.75,
+      "value": 0.0004725568844682655,
+      "mcse": 8.349925326542925e-06,
+      "ess_bulk": 174.4838428191467,
+      "rhat": 1.0465524159550363
+    },
+    {
+      "arm": "published",
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.975,
+      "value": 0.0007311070695454723,
+      "mcse": 1.5789138970082885e-05,
+      "ess_bulk": 174.4838428191467,
+      "rhat": 1.0465524159550363
+    },
+    {
+      "arm": "published",
+      "parameter": "recent_detection_rate",
+      "quantile": 0.025,
+      "value": 1.724065232551892,
+      "mcse": 0.06391023037951815,
+      "ess_bulk": 99.46868016362187,
+      "rhat": 1.0645676492371248
+    },
+    {
+      "arm": "published",
+      "parameter": "recent_detection_rate",
+      "quantile": 0.25,
+      "value": 2.544379387637468,
+      "mcse": 0.04880537985689948,
+      "ess_bulk": 99.46868016362187,
+      "rhat": 1.0645676492371248
+    },
+    {
+      "arm": "published",
+      "parameter": "recent_detection_rate",
+      "quantile": 0.5,
+      "value": 3.140708394212834,
+      "mcse": 0.06441699689121094,
+      "ess_bulk": 99.46868016362187,
+      "rhat": 1.0645676492371248
+    },
+    {
+      "arm": "published",
+      "parameter": "recent_detection_rate",
+      "quantile": 0.75,
+      "value": 3.7651765468783065,
+      "mcse": 0.11933045813767018,
+      "ess_bulk": 99.46868016362187,
+      "rhat": 1.0645676492371248
+    },
+    {
+      "arm": "published",
+      "parameter": "recent_detection_rate",
+      "quantile": 0.975,
+      "value": 4.716744475387329,
+      "mcse": 0.1282499557640966,
+      "ess_bulk": 99.46868016362187,
+      "rhat": 1.0645676492371248
+    },
+    {
+      "arm": "published",
+      "parameter": "rel_sus_children",
+      "quantile": 0.025,
+      "value": 0.3240500869535445,
+      "mcse": 0.0029721622251157598,
+      "ess_bulk": 51.16671593420059,
+      "rhat": 1.1169493347232367
+    },
+    {
+      "arm": "published",
+      "parameter": "rel_sus_children",
+      "quantile": 0.25,
+      "value": 0.40154868373015323,
+      "mcse": 0.013205442187359917,
+      "ess_bulk": 51.16671593420059,
+      "rhat": 1.1169493347232367
+    },
+    {
+      "arm": "published",
+      "parameter": "rel_sus_children",
+      "quantile": 0.5,
+      "value": 0.4800298784826078,
+      "mcse": 0.021587379938563134,
+      "ess_bulk": 51.16671593420059,
+      "rhat": 1.1169493347232367
+    },
+    {
+      "arm": "published",
+      "parameter": "rel_sus_children",
+      "quantile": 0.75,
+      "value": 0.5915464205485463,
+      "mcse": 0.024692986387571947,
+      "ess_bulk": 51.16671593420059,
+      "rhat": 1.1169493347232367
+    },
+    {
+      "arm": "published",
+      "parameter": "rel_sus_children",
+      "quantile": 0.975,
+      "value": 0.8585661661944528,
+      "mcse": 0.023671427931203526,
+      "ess_bulk": 51.16671593420059,
+      "rhat": 1.1169493347232367
+    },
+    {
+      "arm": "published",
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.025,
+      "value": 0.5285722653787749,
+      "mcse": 0.003241449159052112,
+      "ess_bulk": 297.2996827176815,
+      "rhat": 1.0342263735446744
+    },
+    {
+      "arm": "published",
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.25,
+      "value": 0.6503180721989537,
+      "mcse": 0.009073372688465198,
+      "ess_bulk": 297.2996827176815,
+      "rhat": 1.0342263735446744
+    },
+    {
+      "arm": "published",
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.5,
+      "value": 0.764212411231968,
+      "mcse": 0.010517138182743524,
+      "ess_bulk": 297.2996827176815,
+      "rhat": 1.0342263735446744
+    },
+    {
+      "arm": "published",
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.75,
+      "value": 0.8672327104642158,
+      "mcse": 0.007639328456738259,
+      "ess_bulk": 297.2996827176815,
+      "rhat": 1.0342263735446744
+    },
+    {
+      "arm": "published",
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.975,
+      "value": 0.9789876094044048,
+      "mcse": 0.0037148063604739434,
+      "ess_bulk": 297.2996827176815,
+      "rhat": 1.0342263735446744
+    },
+    {
+      "arm": "published",
+      "parameter": "rel_sus_contained",
+      "quantile": 0.025,
+      "value": 0.21348815590609552,
+      "mcse": 0.002511604692649022,
+      "ess_bulk": 307.60290678786714,
+      "rhat": 1.0306914483348852
+    },
+    {
+      "arm": "published",
+      "parameter": "rel_sus_contained",
+      "quantile": 0.25,
+      "value": 0.2853607951320152,
+      "mcse": 0.004461850731205225,
+      "ess_bulk": 307.60290678786714,
+      "rhat": 1.0306914483348852
+    },
+    {
+      "arm": "published",
+      "parameter": "rel_sus_contained",
+      "quantile": 0.5,
+      "value": 0.35591305180913757,
+      "mcse": 0.007421249946978625,
+      "ess_bulk": 307.60290678786714,
+      "rhat": 1.0306914483348852
+    },
+    {
+      "arm": "published",
+      "parameter": "rel_sus_contained",
+      "quantile": 0.75,
+      "value": 0.42134793850403884,
+      "mcse": 0.005111188785799636,
+      "ess_bulk": 307.60290678786714,
+      "rhat": 1.0306914483348852
+    },
+    {
+      "arm": "published",
+      "parameter": "rel_sus_contained",
+      "quantile": 0.975,
+      "value": 0.48713110801653164,
+      "mcse": 0.002019598978508619,
+      "ess_bulk": 307.60290678786714,
+      "rhat": 1.0306914483348852
+    },
+    {
+      "arm": "neutra",
+      "parameter": "a_spread",
+      "quantile": 0.025,
+      "value": 2.739490268094199,
+      "mcse": 0.09318397990243144,
+      "ess_bulk": 203.71545292894828,
+      "rhat": 1.017287495448416
+    },
+    {
+      "arm": "neutra",
+      "parameter": "a_spread",
+      "quantile": 0.25,
+      "value": 4.259122184863761,
+      "mcse": 0.3022499695790133,
+      "ess_bulk": 203.71545292894828,
+      "rhat": 1.017287495448416
+    },
+    {
+      "arm": "neutra",
+      "parameter": "a_spread",
+      "quantile": 0.5,
+      "value": 5.455467615257429,
+      "mcse": 0.23848040570732776,
+      "ess_bulk": 203.71545292894828,
+      "rhat": 1.017287495448416
+    },
+    {
+      "arm": "neutra",
+      "parameter": "a_spread",
+      "quantile": 0.75,
+      "value": 7.16424062289326,
+      "mcse": 0.1968516363255679,
+      "ess_bulk": 203.71545292894828,
+      "rhat": 1.017287495448416
+    },
+    {
+      "arm": "neutra",
+      "parameter": "a_spread",
+      "quantile": 0.975,
+      "value": 13.155820106183915,
+      "mcse": 0.6184002778257423,
+      "ess_bulk": 203.71545292894828,
+      "rhat": 1.017287495448416
+    },
+    {
+      "arm": "neutra",
+      "parameter": "bg_mixing",
+      "quantile": 0.025,
+      "value": 0.01007182608103491,
+      "mcse": 5.614938059761345e-05,
+      "ess_bulk": 177.80135794707547,
+      "rhat": 1.026827990661262
+    },
+    {
+      "arm": "neutra",
+      "parameter": "bg_mixing",
+      "quantile": 0.25,
+      "value": 0.012581748489020168,
+      "mcse": 0.0006921867118286186,
+      "ess_bulk": 177.80135794707547,
+      "rhat": 1.026827990661262
+    },
+    {
+      "arm": "neutra",
+      "parameter": "bg_mixing",
+      "quantile": 0.5,
+      "value": 0.016959683066379995,
+      "mcse": 0.0011265333103868558,
+      "ess_bulk": 177.80135794707547,
+      "rhat": 1.026827990661262
+    },
+    {
+      "arm": "neutra",
+      "parameter": "bg_mixing",
+      "quantile": 0.75,
+      "value": 0.02160261853569986,
+      "mcse": 0.0006495330614932956,
+      "ess_bulk": 177.80135794707547,
+      "rhat": 1.026827990661262
+    },
+    {
+      "arm": "neutra",
+      "parameter": "bg_mixing",
+      "quantile": 0.975,
+      "value": 0.04352679924204469,
+      "mcse": 0.0031804191784719008,
+      "ess_bulk": 177.80135794707547,
+      "rhat": 1.026827990661262
+    },
+    {
+      "arm": "neutra",
+      "parameter": "breakdown_rate",
+      "quantile": 0.025,
+      "value": 0.4790286113056963,
+      "mcse": 0.02275820639093684,
+      "ess_bulk": 32.350900261399076,
+      "rhat": 1.0836041225610047
+    },
+    {
+      "arm": "neutra",
+      "parameter": "breakdown_rate",
+      "quantile": 0.25,
+      "value": 0.6506096096447994,
+      "mcse": 0.06253593448277256,
+      "ess_bulk": 32.350900261399076,
+      "rhat": 1.0836041225610047
+    },
+    {
+      "arm": "neutra",
+      "parameter": "breakdown_rate",
+      "quantile": 0.5,
+      "value": 0.793267367513207,
+      "mcse": 0.0268103855166254,
+      "ess_bulk": 32.350900261399076,
+      "rhat": 1.0836041225610047
+    },
+    {
+      "arm": "neutra",
+      "parameter": "breakdown_rate",
+      "quantile": 0.75,
+      "value": 0.8947820361769783,
+      "mcse": 0.016010282308692336,
+      "ess_bulk": 32.350900261399076,
+      "rhat": 1.0836041225610047
+    },
+    {
+      "arm": "neutra",
+      "parameter": "breakdown_rate",
+      "quantile": 0.975,
+      "value": 0.9708770948018396,
+      "mcse": 0.0025030295003735104,
+      "ess_bulk": 32.350900261399076,
+      "rhat": 1.0836041225610047
+    },
+    {
+      "arm": "neutra",
+      "parameter": "clearance_rate",
+      "quantile": 0.025,
+      "value": 0.0101986170601174,
+      "mcse": 2.5456312226166018e-05,
+      "ess_bulk": 13.63469166042642,
+      "rhat": 1.2121566396045564
+    },
+    {
+      "arm": "neutra",
+      "parameter": "clearance_rate",
+      "quantile": 0.25,
+      "value": 0.016810162322220133,
+      "mcse": 0.009377013555469625,
+      "ess_bulk": 13.63469166042642,
+      "rhat": 1.2121566396045564
+    },
+    {
+      "arm": "neutra",
+      "parameter": "clearance_rate",
+      "quantile": 0.5,
+      "value": 0.04034046882972673,
+      "mcse": 0.008246491300958534,
+      "ess_bulk": 13.63469166042642,
+      "rhat": 1.2121566396045564
+    },
+    {
+      "arm": "neutra",
+      "parameter": "clearance_rate",
+      "quantile": 0.75,
+      "value": 0.06501802444062608,
+      "mcse": 0.0057122096958857164,
+      "ess_bulk": 13.63469166042642,
+      "rhat": 1.2121566396045564
+    },
+    {
+      "arm": "neutra",
+      "parameter": "clearance_rate",
+      "quantile": 0.975,
+      "value": 0.09608840672145409,
+      "mcse": 0.0022467524931619534,
+      "ess_bulk": 13.63469166042642,
+      "rhat": 1.2121566396045564
+    },
+    {
+      "arm": "neutra",
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.025,
+      "value": 0.6953508074999012,
+      "mcse": 0.004422305625786216,
+      "ess_bulk": 34.78023529438374,
+      "rhat": 1.0834484648788936
+    },
+    {
+      "arm": "neutra",
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.25,
+      "value": 0.8696893324584257,
+      "mcse": 0.13699889778595892,
+      "ess_bulk": 34.78023529438374,
+      "rhat": 1.0834484648788936
+    },
+    {
+      "arm": "neutra",
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.5,
+      "value": 1.1224416588354342,
+      "mcse": 0.05386049761107525,
+      "ess_bulk": 34.78023529438374,
+      "rhat": 1.0834484648788936
+    },
+    {
+      "arm": "neutra",
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.75,
+      "value": 1.358220604318861,
+      "mcse": 0.027127541797572707,
+      "ess_bulk": 34.78023529438374,
+      "rhat": 1.0834484648788936
+    },
+    {
+      "arm": "neutra",
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.975,
+      "value": 1.8605028593205815,
+      "mcse": 0.022093650183249824,
+      "ess_bulk": 34.78023529438374,
+      "rhat": 1.0834484648788936
+    },
+    {
+      "arm": "neutra",
+      "parameter": "infection_pop_scale",
+      "quantile": 0.025,
+      "value": 0.5051968801077089,
+      "mcse": 0.04585917532388564,
+      "ess_bulk": 256.34608209580927,
+      "rhat": 1.0188469205175863
+    },
+    {
+      "arm": "neutra",
+      "parameter": "infection_pop_scale",
+      "quantile": 0.25,
+      "value": 0.7820145770990278,
+      "mcse": 0.017417736517873428,
+      "ess_bulk": 256.34608209580927,
+      "rhat": 1.0188469205175863
+    },
+    {
+      "arm": "neutra",
+      "parameter": "infection_pop_scale",
+      "quantile": 0.5,
+      "value": 0.8898226501986232,
+      "mcse": 0.02063004709845717,
+      "ess_bulk": 256.34608209580927,
+      "rhat": 1.0188469205175863
+    },
+    {
+      "arm": "neutra",
+      "parameter": "infection_pop_scale",
+      "quantile": 0.75,
+      "value": 0.9406561031529721,
+      "mcse": 0.004746600822938207,
+      "ess_bulk": 256.34608209580927,
+      "rhat": 1.0188469205175863
+    },
+    {
+      "arm": "neutra",
+      "parameter": "infection_pop_scale",
+      "quantile": 0.975,
+      "value": 0.993254037118245,
+      "mcse": 0.004919139280322948,
+      "ess_bulk": 256.34608209580927,
+      "rhat": 1.0188469205175863
+    },
+    {
+      "arm": "neutra",
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.025,
+      "value": 1.6897555436033695,
+      "mcse": 0.050530543265845385,
+      "ess_bulk": 86.32345220535404,
+      "rhat": 1.0379167078553582
+    },
+    {
+      "arm": "neutra",
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.25,
+      "value": 2.6300786689367515,
+      "mcse": 0.12715061614080847,
+      "ess_bulk": 86.32345220535404,
+      "rhat": 1.0379167078553582
+    },
+    {
+      "arm": "neutra",
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.5,
+      "value": 3.3638536922729463,
+      "mcse": 0.201041886417346,
+      "ess_bulk": 86.32345220535404,
+      "rhat": 1.0379167078553582
+    },
+    {
+      "arm": "neutra",
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.75,
+      "value": 4.599456006903563,
+      "mcse": 0.25466629164423926,
+      "ess_bulk": 86.32345220535404,
+      "rhat": 1.0379167078553582
+    },
+    {
+      "arm": "neutra",
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.975,
+      "value": 8.017185793470588,
+      "mcse": 0.5595560679952545,
+      "ess_bulk": 86.32345220535404,
+      "rhat": 1.0379167078553582
+    },
+    {
+      "arm": "neutra",
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.025,
+      "value": 8.586793010586165,
+      "mcse": 0.40948205087133793,
+      "ess_bulk": 24.898738286638082,
+      "rhat": 1.1094393941657175
+    },
+    {
+      "arm": "neutra",
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.25,
+      "value": 12.24994246469982,
+      "mcse": 0.6294707933423629,
+      "ess_bulk": 24.898738286638082,
+      "rhat": 1.1094393941657175
+    },
+    {
+      "arm": "neutra",
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.5,
+      "value": 16.059068669880567,
+      "mcse": 1.0138548624326242,
+      "ess_bulk": 24.898738286638082,
+      "rhat": 1.1094393941657175
+    },
+    {
+      "arm": "neutra",
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.75,
+      "value": 18.522330192284777,
+      "mcse": 0.8567956243774262,
+      "ess_bulk": 24.898738286638082,
+      "rhat": 1.1094393941657175
+    },
+    {
+      "arm": "neutra",
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.975,
+      "value": 19.775817873134805,
+      "mcse": 0.005157575425799976,
+      "ess_bulk": 24.898738286638082,
+      "rhat": 1.1094393941657175
+    },
+    {
+      "arm": "neutra",
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.025,
+      "value": 1991.019273177622,
+      "mcse": 0.9286669360325277,
+      "ess_bulk": 152.96973306368582,
+      "rhat": 1.153941116913829
+    },
+    {
+      "arm": "neutra",
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.25,
+      "value": 2000.7994174331934,
+      "mcse": 1.4304522767106391,
+      "ess_bulk": 152.96973306368582,
+      "rhat": 1.153941116913829
+    },
+    {
+      "arm": "neutra",
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.5,
+      "value": 2005.6722933719057,
+      "mcse": 0.10493089955878077,
+      "ess_bulk": 152.96973306368582,
+      "rhat": 1.153941116913829
+    },
+    {
+      "arm": "neutra",
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.75,
+      "value": 2010.1713296391567,
+      "mcse": 0.6380410696950776,
+      "ess_bulk": 152.96973306368582,
+      "rhat": 1.153941116913829
+    },
+    {
+      "arm": "neutra",
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.975,
+      "value": 2017.6282161816703,
+      "mcse": 0.48743287587092254,
+      "ess_bulk": 152.96973306368582,
+      "rhat": 1.153941116913829
+    },
+    {
+      "arm": "neutra",
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.025,
+      "value": 0.308378730821715,
+      "mcse": 0.001995367049760055,
+      "ess_bulk": 44.09656891499642,
+      "rhat": 1.0652808485605256
+    },
+    {
+      "arm": "neutra",
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.25,
+      "value": 0.3668911538649653,
+      "mcse": 0.01881314309173418,
+      "ess_bulk": 44.09656891499642,
+      "rhat": 1.0652808485605256
+    },
+    {
+      "arm": "neutra",
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.5,
+      "value": 0.461884916012936,
+      "mcse": 0.030059170160583487,
+      "ess_bulk": 44.09656891499642,
+      "rhat": 1.0652808485605256
+    },
+    {
+      "arm": "neutra",
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.75,
+      "value": 0.5678449344566587,
+      "mcse": 0.014854233111680715,
+      "ess_bulk": 44.09656891499642,
+      "rhat": 1.0652808485605256
+    },
+    {
+      "arm": "neutra",
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.975,
+      "value": 0.7826806673937842,
+      "mcse": 0.029089044100712336,
+      "ess_bulk": 44.09656891499642,
+      "rhat": 1.0652808485605256
+    },
+    {
+      "arm": "neutra",
+      "parameter": "pc_strength",
+      "quantile": 0.025,
+      "value": 0.01766483435841008,
+      "mcse": 0.0022194267012169283,
+      "ess_bulk": 201.89110701088447,
+      "rhat": 1.1300815127673995
+    },
+    {
+      "arm": "neutra",
+      "parameter": "pc_strength",
+      "quantile": 0.25,
+      "value": 0.10518971167095745,
+      "mcse": 0.016990880325612044,
+      "ess_bulk": 201.89110701088447,
+      "rhat": 1.1300815127673995
+    },
+    {
+      "arm": "neutra",
+      "parameter": "pc_strength",
+      "quantile": 0.5,
+      "value": 0.2062086908487255,
+      "mcse": 0.016220809258674557,
+      "ess_bulk": 201.89110701088447,
+      "rhat": 1.1300815127673995
+    },
+    {
+      "arm": "neutra",
+      "parameter": "pc_strength",
+      "quantile": 0.75,
+      "value": 0.4048043268718875,
+      "mcse": 0.07141570890168575,
+      "ess_bulk": 201.89110701088447,
+      "rhat": 1.1300815127673995
+    },
+    {
+      "arm": "neutra",
+      "parameter": "pc_strength",
+      "quantile": 0.975,
+      "value": 0.9291303060549246,
+      "mcse": 0.031010570696935746,
+      "ess_bulk": 201.89110701088447,
+      "rhat": 1.1300815127673995
+    },
+    {
+      "arm": "neutra",
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.025,
+      "value": 0.21591961241849697,
+      "mcse": 0.005290435474189628,
+      "ess_bulk": 129.4716721491352,
+      "rhat": 1.0444141280528705
+    },
+    {
+      "arm": "neutra",
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.25,
+      "value": 0.32126290738617735,
+      "mcse": 0.007371834022677465,
+      "ess_bulk": 129.4716721491352,
+      "rhat": 1.0444141280528705
+    },
+    {
+      "arm": "neutra",
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.5,
+      "value": 0.3763676599258608,
+      "mcse": 0.006455379337148903,
+      "ess_bulk": 129.4716721491352,
+      "rhat": 1.0444141280528705
+    },
+    {
+      "arm": "neutra",
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.75,
+      "value": 0.42145812963874046,
+      "mcse": 0.008604526784684902,
+      "ess_bulk": 129.4716721491352,
+      "rhat": 1.0444141280528705
+    },
+    {
+      "arm": "neutra",
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.975,
+      "value": 0.49331149643860184,
+      "mcse": 0.0014415081289602671,
+      "ess_bulk": 129.4716721491352,
+      "rhat": 1.0444141280528705
+    },
+    {
+      "arm": "neutra",
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.025,
+      "value": 0.7283962906077828,
+      "mcse": 0.0018195665842750675,
+      "ess_bulk": 181.33191663808174,
+      "rhat": 1.0562516695795212
+    },
+    {
+      "arm": "neutra",
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.25,
+      "value": 0.7864482430554427,
+      "mcse": 0.011546244356651914,
+      "ess_bulk": 181.33191663808174,
+      "rhat": 1.0562516695795212
+    },
+    {
+      "arm": "neutra",
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.5,
+      "value": 0.8288029361726579,
+      "mcse": 0.006202514657802027,
+      "ess_bulk": 181.33191663808174,
+      "rhat": 1.0562516695795212
+    },
+    {
+      "arm": "neutra",
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.75,
+      "value": 0.8744056092159129,
+      "mcse": 0.006411209626794534,
+      "ess_bulk": 181.33191663808174,
+      "rhat": 1.0562516695795212
+    },
+    {
+      "arm": "neutra",
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.975,
+      "value": 0.921534519981547,
+      "mcse": 0.0024738283037570308,
+      "ess_bulk": 181.33191663808174,
+      "rhat": 1.0562516695795212
+    },
+    {
+      "arm": "neutra",
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.025,
+      "value": 0.08831864290207002,
+      "mcse": 0.011675106576671299,
+      "ess_bulk": 109.76450169997176,
+      "rhat": 1.040038160027583
+    },
+    {
+      "arm": "neutra",
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.25,
+      "value": 0.18871417952260416,
+      "mcse": 0.008156656935652887,
+      "ess_bulk": 109.76450169997176,
+      "rhat": 1.040038160027583
+    },
+    {
+      "arm": "neutra",
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.5,
+      "value": 0.28346389778804154,
+      "mcse": 0.02044001733255149,
+      "ess_bulk": 109.76450169997176,
+      "rhat": 1.040038160027583
+    },
+    {
+      "arm": "neutra",
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.75,
+      "value": 0.39768988174825237,
+      "mcse": 0.01639965876593477,
+      "ess_bulk": 109.76450169997176,
+      "rhat": 1.040038160027583
+    },
+    {
+      "arm": "neutra",
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.975,
+      "value": 0.49968576457729663,
+      "mcse": 0.0028192929921014853,
+      "ess_bulk": 109.76450169997176,
+      "rhat": 1.040038160027583
+    },
+    {
+      "arm": "neutra",
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.025,
+      "value": 0.0002096930138892205,
+      "mcse": 8.38989367538809e-06,
+      "ess_bulk": 61.58403753091897,
+      "rhat": 1.053774810055537
+    },
+    {
+      "arm": "neutra",
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.25,
+      "value": 0.00025929807455845233,
+      "mcse": 1.6936601226617078e-05,
+      "ess_bulk": 61.58403753091897,
+      "rhat": 1.053774810055537
+    },
+    {
+      "arm": "neutra",
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.5,
+      "value": 0.00032558213854720657,
+      "mcse": 1.9884955250224043e-05,
+      "ess_bulk": 61.58403753091897,
+      "rhat": 1.053774810055537
+    },
+    {
+      "arm": "neutra",
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.75,
+      "value": 0.0004379767366094482,
+      "mcse": 1.7074172701702717e-05,
+      "ess_bulk": 61.58403753091897,
+      "rhat": 1.053774810055537
+    },
+    {
+      "arm": "neutra",
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.975,
+      "value": 0.0007517450790550946,
+      "mcse": 6.272846897132647e-05,
+      "ess_bulk": 61.58403753091897,
+      "rhat": 1.053774810055537
+    },
+    {
+      "arm": "neutra",
+      "parameter": "recent_detection_rate",
+      "quantile": 0.025,
+      "value": 1.8326113341483563,
+      "mcse": 0.08366459022288575,
+      "ess_bulk": 13.98534781739137,
+      "rhat": 1.2118443359348459
+    },
+    {
+      "arm": "neutra",
+      "parameter": "recent_detection_rate",
+      "quantile": 0.25,
+      "value": 2.575538979273047,
+      "mcse": 0.13894288719478776,
+      "ess_bulk": 13.98534781739137,
+      "rhat": 1.2118443359348459
+    },
+    {
+      "arm": "neutra",
+      "parameter": "recent_detection_rate",
+      "quantile": 0.5,
+      "value": 3.2924631714513897,
+      "mcse": 0.21207501474069557,
+      "ess_bulk": 13.98534781739137,
+      "rhat": 1.2118443359348459
+    },
+    {
+      "arm": "neutra",
+      "parameter": "recent_detection_rate",
+      "quantile": 0.75,
+      "value": 3.8361926835649998,
+      "mcse": 0.37385125037016875,
+      "ess_bulk": 13.98534781739137,
+      "rhat": 1.2118443359348459
+    },
+    {
+      "arm": "neutra",
+      "parameter": "recent_detection_rate",
+      "quantile": 0.975,
+      "value": 4.795572181252229,
+      "mcse": 0.146077606066211,
+      "ess_bulk": 13.98534781739137,
+      "rhat": 1.2118443359348459
+    },
+    {
+      "arm": "neutra",
+      "parameter": "rel_sus_children",
+      "quantile": 0.025,
+      "value": 0.32169578564724427,
+      "mcse": 0.0069016694750435315,
+      "ess_bulk": 244.76309096567016,
+      "rhat": 1.0510563054652522
+    },
+    {
+      "arm": "neutra",
+      "parameter": "rel_sus_children",
+      "quantile": 0.25,
+      "value": 0.4276941921818932,
+      "mcse": 0.022118091674153434,
+      "ess_bulk": 244.76309096567016,
+      "rhat": 1.0510563054652522
+    },
+    {
+      "arm": "neutra",
+      "parameter": "rel_sus_children",
+      "quantile": 0.5,
+      "value": 0.5338532651700667,
+      "mcse": 0.019987159513358943,
+      "ess_bulk": 244.76309096567016,
+      "rhat": 1.0510563054652522
+    },
+    {
+      "arm": "neutra",
+      "parameter": "rel_sus_children",
+      "quantile": 0.75,
+      "value": 0.6031058866235435,
+      "mcse": 0.012626448058466688,
+      "ess_bulk": 244.76309096567016,
+      "rhat": 1.0510563054652522
+    },
+    {
+      "arm": "neutra",
+      "parameter": "rel_sus_children",
+      "quantile": 0.975,
+      "value": 0.8529237125385274,
+      "mcse": 0.027507644656932784,
+      "ess_bulk": 244.76309096567016,
+      "rhat": 1.0510563054652522
+    },
+    {
+      "arm": "neutra",
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.025,
+      "value": 0.5199083433020846,
+      "mcse": 0.005589238816239794,
+      "ess_bulk": 155.77189652945646,
+      "rhat": 1.0147123396471613
+    },
+    {
+      "arm": "neutra",
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.25,
+      "value": 0.6360223004486529,
+      "mcse": 0.01750038960410799,
+      "ess_bulk": 155.77189652945646,
+      "rhat": 1.0147123396471613
+    },
+    {
+      "arm": "neutra",
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.5,
+      "value": 0.7605234896496047,
+      "mcse": 0.031052538045104217,
+      "ess_bulk": 155.77189652945646,
+      "rhat": 1.0147123396471613
+    },
+    {
+      "arm": "neutra",
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.75,
+      "value": 0.8924529675001148,
+      "mcse": 0.015382912616104139,
+      "ess_bulk": 155.77189652945646,
+      "rhat": 1.0147123396471613
+    },
+    {
+      "arm": "neutra",
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.975,
+      "value": 0.9847444080454137,
+      "mcse": 0.00559058978232474,
+      "ess_bulk": 155.77189652945646,
+      "rhat": 1.0147123396471613
+    },
+    {
+      "arm": "neutra",
+      "parameter": "rel_sus_contained",
+      "quantile": 0.025,
+      "value": 0.20932899298248153,
+      "mcse": 0.0028950608959116275,
+      "ess_bulk": 267.90167390298996,
+      "rhat": 1.0403037290594446
+    },
+    {
+      "arm": "neutra",
+      "parameter": "rel_sus_contained",
+      "quantile": 0.25,
+      "value": 0.28769427031922773,
+      "mcse": 0.007397431623499623,
+      "ess_bulk": 267.90167390298996,
+      "rhat": 1.0403037290594446
+    },
+    {
+      "arm": "neutra",
+      "parameter": "rel_sus_contained",
+      "quantile": 0.5,
+      "value": 0.35983741745898035,
+      "mcse": 0.014674015395385487,
+      "ess_bulk": 267.90167390298996,
+      "rhat": 1.0403037290594446
+    },
+    {
+      "arm": "neutra",
+      "parameter": "rel_sus_contained",
+      "quantile": 0.75,
+      "value": 0.43557442140453123,
+      "mcse": 0.007861726550678821,
+      "ess_bulk": 267.90167390298996,
+      "rhat": 1.0403037290594446
+    },
+    {
+      "arm": "neutra",
+      "parameter": "rel_sus_contained",
+      "quantile": 0.975,
+      "value": 0.4901896767563785,
+      "mcse": 0.00265011445612226,
+      "ess_bulk": 267.90167390298996,
+      "rhat": 1.0403037290594446
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "a_spread",
+      "quantile": 0.025,
+      "value": 2.2899999743725,
+      "mcse": 0.14813299476082475,
+      "ess_bulk": 217.51104088433007,
+      "rhat": 1.0224187289020965
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "a_spread",
+      "quantile": 0.25,
+      "value": 3.9302312934190806,
+      "mcse": 0.19902871423947888,
+      "ess_bulk": 217.51104088433007,
+      "rhat": 1.0224187289020965
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "a_spread",
+      "quantile": 0.5,
+      "value": 5.521416424765119,
+      "mcse": 0.14668656724554152,
+      "ess_bulk": 217.51104088433007,
+      "rhat": 1.0224187289020965
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "a_spread",
+      "quantile": 0.75,
+      "value": 8.16943858395605,
+      "mcse": 0.43095732874549153,
+      "ess_bulk": 217.51104088433007,
+      "rhat": 1.0224187289020965
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "a_spread",
+      "quantile": 0.975,
+      "value": 14.014654173033495,
+      "mcse": 0.7749138540996627,
+      "ess_bulk": 217.51104088433007,
+      "rhat": 1.0224187289020965
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "bg_mixing",
+      "quantile": 0.025,
+      "value": 0.010343282501222328,
+      "mcse": 6.781176718240363e-05,
+      "ess_bulk": 100.54294883318644,
+      "rhat": 1.0493195370062534
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "bg_mixing",
+      "quantile": 0.25,
+      "value": 0.012517487954631248,
+      "mcse": 0.0002577267901890277,
+      "ess_bulk": 100.54294883318644,
+      "rhat": 1.0493195370062534
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "bg_mixing",
+      "quantile": 0.5,
+      "value": 0.016821823715013166,
+      "mcse": 0.001070543896838307,
+      "ess_bulk": 100.54294883318644,
+      "rhat": 1.0493195370062534
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "bg_mixing",
+      "quantile": 0.75,
+      "value": 0.02522625789722325,
+      "mcse": 0.002950009194101849,
+      "ess_bulk": 100.54294883318644,
+      "rhat": 1.0493195370062534
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "bg_mixing",
+      "quantile": 0.975,
+      "value": 0.04348072217290664,
+      "mcse": 0.001023703869960757,
+      "ess_bulk": 100.54294883318644,
+      "rhat": 1.0493195370062534
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "breakdown_rate",
+      "quantile": 0.025,
+      "value": 0.4790983888531281,
+      "mcse": 0.03251813435144493,
+      "ess_bulk": 128.69244777368513,
+      "rhat": 1.041365986955387
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "breakdown_rate",
+      "quantile": 0.25,
+      "value": 0.6679389669422522,
+      "mcse": 0.02212780154180871,
+      "ess_bulk": 128.69244777368513,
+      "rhat": 1.041365986955387
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "breakdown_rate",
+      "quantile": 0.5,
+      "value": 0.7829039160525857,
+      "mcse": 0.015116207070026977,
+      "ess_bulk": 128.69244777368513,
+      "rhat": 1.041365986955387
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "breakdown_rate",
+      "quantile": 0.75,
+      "value": 0.8983183512787986,
+      "mcse": 0.01899553897800016,
+      "ess_bulk": 128.69244777368513,
+      "rhat": 1.041365986955387
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "breakdown_rate",
+      "quantile": 0.975,
+      "value": 0.9904242138301071,
+      "mcse": 0.003438632930660046,
+      "ess_bulk": 128.69244777368513,
+      "rhat": 1.041365986955387
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "clearance_rate",
+      "quantile": 0.025,
+      "value": 0.012788426746900469,
+      "mcse": 0.0007783417565553593,
+      "ess_bulk": 168.0229604272112,
+      "rhat": 1.0304589599315943
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "clearance_rate",
+      "quantile": 0.25,
+      "value": 0.0232493349995114,
+      "mcse": 0.0037944978210349926,
+      "ess_bulk": 168.0229604272112,
+      "rhat": 1.0304589599315943
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "clearance_rate",
+      "quantile": 0.5,
+      "value": 0.044259612623903606,
+      "mcse": 0.00397602769095216,
+      "ess_bulk": 168.0229604272112,
+      "rhat": 1.0304589599315943
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "clearance_rate",
+      "quantile": 0.75,
+      "value": 0.06932855474549905,
+      "mcse": 0.002323414236978627,
+      "ess_bulk": 168.0229604272112,
+      "rhat": 1.0304589599315943
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "clearance_rate",
+      "quantile": 0.975,
+      "value": 0.09793757899200062,
+      "mcse": 0.0015353135851291916,
+      "ess_bulk": 168.0229604272112,
+      "rhat": 1.0304589599315943
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.025,
+      "value": 0.7787288135713148,
+      "mcse": 0.03255310238372233,
+      "ess_bulk": 375.9518040713719,
+      "rhat": 1.0356074624139224
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.25,
+      "value": 1.0200976855576847,
+      "mcse": 0.027478082456291575,
+      "ess_bulk": 375.9518040713719,
+      "rhat": 1.0356074624139224
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.5,
+      "value": 1.1847053587004868,
+      "mcse": 0.013112046896225804,
+      "ess_bulk": 375.9518040713719,
+      "rhat": 1.0356074624139224
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.75,
+      "value": 1.3484996143683563,
+      "mcse": 0.026620122835158577,
+      "ess_bulk": 375.9518040713719,
+      "rhat": 1.0356074624139224
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.975,
+      "value": 1.8352052988516148,
+      "mcse": 0.08814009459999506,
+      "ess_bulk": 375.9518040713719,
+      "rhat": 1.0356074624139224
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "infection_pop_scale",
+      "quantile": 0.025,
+      "value": 0.46326714329198354,
+      "mcse": 0.04103992538644305,
+      "ess_bulk": 264.7745925208579,
+      "rhat": 0.998627536811637
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "infection_pop_scale",
+      "quantile": 0.25,
+      "value": 0.7660849991361087,
+      "mcse": 0.010645633515472763,
+      "ess_bulk": 264.7745925208579,
+      "rhat": 0.998627536811637
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "infection_pop_scale",
+      "quantile": 0.5,
+      "value": 0.8688607308898172,
+      "mcse": 0.018343607470444778,
+      "ess_bulk": 264.7745925208579,
+      "rhat": 0.998627536811637
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "infection_pop_scale",
+      "quantile": 0.75,
+      "value": 0.9430325966349503,
+      "mcse": 0.008219352176810635,
+      "ess_bulk": 264.7745925208579,
+      "rhat": 0.998627536811637
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "infection_pop_scale",
+      "quantile": 0.975,
+      "value": 0.9936208083090136,
+      "mcse": 0.0022326774117409354,
+      "ess_bulk": 264.7745925208579,
+      "rhat": 0.998627536811637
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.025,
+      "value": 1.732785368426952,
+      "mcse": 0.08272664472401914,
+      "ess_bulk": 228.41281330707423,
+      "rhat": 1.0120324959380005
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.25,
+      "value": 2.6819544993760784,
+      "mcse": 0.13165405135286612,
+      "ess_bulk": 228.41281330707423,
+      "rhat": 1.0120324959380005
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.5,
+      "value": 3.702639115289148,
+      "mcse": 0.10302225685629551,
+      "ess_bulk": 228.41281330707423,
+      "rhat": 1.0120324959380005
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.75,
+      "value": 4.899998482596385,
+      "mcse": 0.1275221256282224,
+      "ess_bulk": 228.41281330707423,
+      "rhat": 1.0120324959380005
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.975,
+      "value": 7.417567906219818,
+      "mcse": 0.3492389581227866,
+      "ess_bulk": 228.41281330707423,
+      "rhat": 1.0120324959380005
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.025,
+      "value": 7.798510049037325,
+      "mcse": 0.5629910620092495,
+      "ess_bulk": 182.62488493721116,
+      "rhat": 1.0235063225421757
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.25,
+      "value": 12.318733837067084,
+      "mcse": 0.30271060678873596,
+      "ess_bulk": 182.62488493721116,
+      "rhat": 1.0235063225421757
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.5,
+      "value": 15.36988575390638,
+      "mcse": 0.49700122435087213,
+      "ess_bulk": 182.62488493721116,
+      "rhat": 1.0235063225421757
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.75,
+      "value": 18.00898214457313,
+      "mcse": 0.7612577231207371,
+      "ess_bulk": 182.62488493721116,
+      "rhat": 1.0235063225421757
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.975,
+      "value": 19.668341438190023,
+      "mcse": 0.07670696031081725,
+      "ess_bulk": 182.62488493721116,
+      "rhat": 1.0235063225421757
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.025,
+      "value": 1991.529700588754,
+      "mcse": 0.16601247093035454,
+      "ess_bulk": 183.06847597503767,
+      "rhat": 1.030889367551631
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.25,
+      "value": 2000.1233346165768,
+      "mcse": 1.2085085993546727,
+      "ess_bulk": 183.06847597503767,
+      "rhat": 1.030889367551631
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.5,
+      "value": 2006.5252457671909,
+      "mcse": 0.31071633889155237,
+      "ess_bulk": 183.06847597503767,
+      "rhat": 1.030889367551631
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.75,
+      "value": 2012.3119355769068,
+      "mcse": 0.9114639319487878,
+      "ess_bulk": 183.06847597503767,
+      "rhat": 1.030889367551631
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.975,
+      "value": 2019.2488663473875,
+      "mcse": 0.7898655330537849,
+      "ess_bulk": 183.06847597503767,
+      "rhat": 1.030889367551631
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.025,
+      "value": 0.3062300319658491,
+      "mcse": 0.005285583636420982,
+      "ess_bulk": 240.17782515329074,
+      "rhat": 1.017405823387869
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.25,
+      "value": 0.3633019882204723,
+      "mcse": 0.005838990440154956,
+      "ess_bulk": 240.17782515329074,
+      "rhat": 1.017405823387869
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.5,
+      "value": 0.4173402999438075,
+      "mcse": 0.008852890783917211,
+      "ess_bulk": 240.17782515329074,
+      "rhat": 1.017405823387869
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.75,
+      "value": 0.5439685240768026,
+      "mcse": 0.014094054310737847,
+      "ess_bulk": 240.17782515329074,
+      "rhat": 1.017405823387869
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.975,
+      "value": 0.9179707909480688,
+      "mcse": 0.034087087351196144,
+      "ess_bulk": 240.17782515329074,
+      "rhat": 1.017405823387869
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "pc_strength",
+      "quantile": 0.025,
+      "value": 0.019361775684199327,
+      "mcse": 0.0022770261693216415,
+      "ess_bulk": 36.832124787278204,
+      "rhat": 1.1099123027572864
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "pc_strength",
+      "quantile": 0.25,
+      "value": 0.09997937095628093,
+      "mcse": 0.00890456727687873,
+      "ess_bulk": 36.832124787278204,
+      "rhat": 1.1099123027572864
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "pc_strength",
+      "quantile": 0.5,
+      "value": 0.22355351124993555,
+      "mcse": 0.018821948123299306,
+      "ess_bulk": 36.832124787278204,
+      "rhat": 1.1099123027572864
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "pc_strength",
+      "quantile": 0.75,
+      "value": 0.5163967813817335,
+      "mcse": 0.13540204833060338,
+      "ess_bulk": 36.832124787278204,
+      "rhat": 1.1099123027572864
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "pc_strength",
+      "quantile": 0.975,
+      "value": 0.9010790816473433,
+      "mcse": 0.010061532362606929,
+      "ess_bulk": 36.832124787278204,
+      "rhat": 1.1099123027572864
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.025,
+      "value": 0.20991938126830925,
+      "mcse": 0.005985297764312156,
+      "ess_bulk": 216.0710454884208,
+      "rhat": 1.0248036488629977
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.25,
+      "value": 0.2889767235770135,
+      "mcse": 0.007011571821207929,
+      "ess_bulk": 216.0710454884208,
+      "rhat": 1.0248036488629977
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.5,
+      "value": 0.3599793389743903,
+      "mcse": 0.011443235048031436,
+      "ess_bulk": 216.0710454884208,
+      "rhat": 1.0248036488629977
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.75,
+      "value": 0.4229336139706304,
+      "mcse": 0.0065765331666231,
+      "ess_bulk": 216.0710454884208,
+      "rhat": 1.0248036488629977
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.975,
+      "value": 0.4919883882180365,
+      "mcse": 0.004332450100681867,
+      "ess_bulk": 216.0710454884208,
+      "rhat": 1.0248036488629977
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.025,
+      "value": 0.7269382681776939,
+      "mcse": 0.0012609304261340104,
+      "ess_bulk": 618.2814509361759,
+      "rhat": 1.0383821121769683
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.25,
+      "value": 0.7732697861202396,
+      "mcse": 0.005372907024328855,
+      "ess_bulk": 618.2814509361759,
+      "rhat": 1.0383821121769683
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.5,
+      "value": 0.8316342098652534,
+      "mcse": 0.00772035860630399,
+      "ess_bulk": 618.2814509361759,
+      "rhat": 1.0383821121769683
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.75,
+      "value": 0.8782122071323313,
+      "mcse": 0.0037742225715970967,
+      "ess_bulk": 618.2814509361759,
+      "rhat": 1.0383821121769683
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.975,
+      "value": 0.9214152324335233,
+      "mcse": 0.003165980303330318,
+      "ess_bulk": 618.2814509361759,
+      "rhat": 1.0383821121769683
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.025,
+      "value": 0.10214444261833032,
+      "mcse": 0.012313996720931489,
+      "ess_bulk": 329.7065353359791,
+      "rhat": 1.0297923054846743
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.25,
+      "value": 0.21111715931164865,
+      "mcse": 0.01168636927953276,
+      "ess_bulk": 329.7065353359791,
+      "rhat": 1.0297923054846743
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.5,
+      "value": 0.3116045825921316,
+      "mcse": 0.011609486193209673,
+      "ess_bulk": 329.7065353359791,
+      "rhat": 1.0297923054846743
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.75,
+      "value": 0.4088897328087153,
+      "mcse": 0.01031956881973295,
+      "ess_bulk": 329.7065353359791,
+      "rhat": 1.0297923054846743
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.975,
+      "value": 0.5134717573314866,
+      "mcse": 0.006510903296886861,
+      "ess_bulk": 329.7065353359791,
+      "rhat": 1.0297923054846743
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.025,
+      "value": 0.00020786958944884166,
+      "mcse": 8.83480750839395e-06,
+      "ess_bulk": 229.69350735196866,
+      "rhat": 1.0262639982687858
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.25,
+      "value": 0.00028048869255788,
+      "mcse": 6.331713483884567e-06,
+      "ess_bulk": 229.69350735196866,
+      "rhat": 1.0262639982687858
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.5,
+      "value": 0.00034257394656556344,
+      "mcse": 1.1118858292917354e-05,
+      "ess_bulk": 229.69350735196866,
+      "rhat": 1.0262639982687858
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.75,
+      "value": 0.00044162445782586137,
+      "mcse": 1.403282027087556e-05,
+      "ess_bulk": 229.69350735196866,
+      "rhat": 1.0262639982687858
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.975,
+      "value": 0.0008162443271603624,
+      "mcse": 9.469406923417757e-05,
+      "ess_bulk": 229.69350735196866,
+      "rhat": 1.0262639982687858
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "recent_detection_rate",
+      "quantile": 0.025,
+      "value": 1.8097583200901046,
+      "mcse": 0.09433672167024099,
+      "ess_bulk": 98.02896214898574,
+      "rhat": 1.0409590819611882
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "recent_detection_rate",
+      "quantile": 0.25,
+      "value": 2.501122762922701,
+      "mcse": 0.19834931561226243,
+      "ess_bulk": 98.02896214898574,
+      "rhat": 1.0409590819611882
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "recent_detection_rate",
+      "quantile": 0.5,
+      "value": 3.201904054403348,
+      "mcse": 0.08324297947073278,
+      "ess_bulk": 98.02896214898574,
+      "rhat": 1.0409590819611882
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "recent_detection_rate",
+      "quantile": 0.75,
+      "value": 3.8371685884786415,
+      "mcse": 0.12485883692366162,
+      "ess_bulk": 98.02896214898574,
+      "rhat": 1.0409590819611882
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "recent_detection_rate",
+      "quantile": 0.975,
+      "value": 4.703248585879837,
+      "mcse": 0.11055711196969176,
+      "ess_bulk": 98.02896214898574,
+      "rhat": 1.0409590819611882
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "rel_sus_children",
+      "quantile": 0.025,
+      "value": 0.319664241850282,
+      "mcse": 0.007184384183497677,
+      "ess_bulk": 263.90508395954504,
+      "rhat": 1.069030932432274
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "rel_sus_children",
+      "quantile": 0.25,
+      "value": 0.3960811807858122,
+      "mcse": 0.01009666527023867,
+      "ess_bulk": 263.90508395954504,
+      "rhat": 1.069030932432274
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "rel_sus_children",
+      "quantile": 0.5,
+      "value": 0.4874056276986698,
+      "mcse": 0.008390756128532212,
+      "ess_bulk": 263.90508395954504,
+      "rhat": 1.069030932432274
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "rel_sus_children",
+      "quantile": 0.75,
+      "value": 0.5871213801265267,
+      "mcse": 0.019366469013466503,
+      "ess_bulk": 263.90508395954504,
+      "rhat": 1.069030932432274
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "rel_sus_children",
+      "quantile": 0.975,
+      "value": 0.878544177996127,
+      "mcse": 0.024646478066019384,
+      "ess_bulk": 263.90508395954504,
+      "rhat": 1.069030932432274
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.025,
+      "value": 0.511622891673711,
+      "mcse": 0.008013683826949058,
+      "ess_bulk": 159.87976274218857,
+      "rhat": 1.0296475838223977
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.25,
+      "value": 0.6478876057214565,
+      "mcse": 0.01876957874438734,
+      "ess_bulk": 159.87976274218857,
+      "rhat": 1.0296475838223977
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.5,
+      "value": 0.7722064016727874,
+      "mcse": 0.031120299504943827,
+      "ess_bulk": 159.87976274218857,
+      "rhat": 1.0296475838223977
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.75,
+      "value": 0.8877791149114478,
+      "mcse": 0.010724353229325634,
+      "ess_bulk": 159.87976274218857,
+      "rhat": 1.0296475838223977
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.975,
+      "value": 0.9918800923103561,
+      "mcse": 0.0021459437536754944,
+      "ess_bulk": 159.87976274218857,
+      "rhat": 1.0296475838223977
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "rel_sus_contained",
+      "quantile": 0.025,
+      "value": 0.20840619836375265,
+      "mcse": 0.001740758524086325,
+      "ess_bulk": 147.78911307019172,
+      "rhat": 1.022525475060467
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "rel_sus_contained",
+      "quantile": 0.25,
+      "value": 0.25579987589593295,
+      "mcse": 0.020198573020573,
+      "ess_bulk": 147.78911307019172,
+      "rhat": 1.022525475060467
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "rel_sus_contained",
+      "quantile": 0.5,
+      "value": 0.3244410068392005,
+      "mcse": 0.009088038295797324,
+      "ess_bulk": 147.78911307019172,
+      "rhat": 1.022525475060467
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "rel_sus_contained",
+      "quantile": 0.75,
+      "value": 0.41586038255212493,
+      "mcse": 0.00790549421658121,
+      "ess_bulk": 147.78911307019172,
+      "rhat": 1.022525475060467
+    },
+    {
+      "arm": "shear_nuts",
+      "parameter": "rel_sus_contained",
+      "quantile": 0.975,
+      "value": 0.4906891111842529,
+      "mcse": 0.00469097913019903,
+      "ess_bulk": 147.78911307019172,
+      "rhat": 1.022525475060467
+    }
+  ],
+  "comparison": [
+    {
+      "parameter": "a_spread",
+      "quantile": 0.025,
+      "arm": "neutra",
+      "difference": 0.23886457760747026,
+      "z": 2.192780854722494
+    },
+    {
+      "parameter": "a_spread",
+      "quantile": 0.25,
+      "arm": "neutra",
+      "difference": 0.029250946987538384,
+      "z": 0.08446728884117052
+    },
+    {
+      "parameter": "a_spread",
+      "quantile": 0.5,
+      "arm": "neutra",
+      "difference": -0.344879710923391,
+      "z": -1.0330362174132794
+    },
+    {
+      "parameter": "a_spread",
+      "quantile": 0.75,
+      "arm": "neutra",
+      "difference": -0.8548002403524837,
+      "z": -2.40762976753094
+    },
+    {
+      "parameter": "a_spread",
+      "quantile": 0.975,
+      "arm": "neutra",
+      "difference": 0.3388455592779245,
+      "z": 0.5093373760964455
+    },
+    {
+      "parameter": "bg_mixing",
+      "quantile": 0.025,
+      "arm": "neutra",
+      "difference": -0.000384919745098293,
+      "z": -4.0011365779111605
+    },
+    {
+      "parameter": "bg_mixing",
+      "quantile": 0.25,
+      "arm": "neutra",
+      "difference": -0.0007642739727980498,
+      "z": -0.862562726926181
+    },
+    {
+      "parameter": "bg_mixing",
+      "quantile": 0.5,
+      "arm": "neutra",
+      "difference": -0.0007418013168648332,
+      "z": -0.3876289051544786
+    },
+    {
+      "parameter": "bg_mixing",
+      "quantile": 0.75,
+      "arm": "neutra",
+      "difference": -0.00425666268052478,
+      "z": -1.2416527724872046
+    },
+    {
+      "parameter": "bg_mixing",
+      "quantile": 0.975,
+      "arm": "neutra",
+      "difference": -0.0010743063462018074,
+      "z": -0.3146107606826542
+    },
+    {
+      "parameter": "breakdown_rate",
+      "quantile": 0.025,
+      "arm": "neutra",
+      "difference": -0.0060747191490116426,
+      "z": -0.23796333569597422
+    },
+    {
+      "parameter": "breakdown_rate",
+      "quantile": 0.25,
+      "arm": "neutra",
+      "difference": -0.015652841769201342,
+      "z": -0.24777542454975918
+    },
+    {
+      "parameter": "breakdown_rate",
+      "quantile": 0.5,
+      "arm": "neutra",
+      "difference": 0.022867249074526197,
+      "z": 0.819065440226758
+    },
+    {
+      "parameter": "breakdown_rate",
+      "quantile": 0.75,
+      "arm": "neutra",
+      "difference": 0.031006297134731575,
+      "z": 1.7532378718859563
+    },
+    {
+      "parameter": "breakdown_rate",
+      "quantile": 0.975,
+      "arm": "neutra",
+      "difference": 0.005697544418139078,
+      "z": 1.130315980040102
+    },
+    {
+      "parameter": "clearance_rate",
+      "quantile": 0.025,
+      "arm": "neutra",
+      "difference": -0.0017169182083554106,
+      "z": -4.167720368535459
+    },
+    {
+      "parameter": "clearance_rate",
+      "quantile": 0.25,
+      "arm": "neutra",
+      "difference": -0.009005038293257276,
+      "z": -0.8934532644294958
+    },
+    {
+      "parameter": "clearance_rate",
+      "quantile": 0.5,
+      "arm": "neutra",
+      "difference": -0.004308988294402946,
+      "z": -0.43231274860771424
+    },
+    {
+      "parameter": "clearance_rate",
+      "quantile": 0.75,
+      "arm": "neutra",
+      "difference": -0.0043259377764645335,
+      "z": -0.5038562141425698
+    },
+    {
+      "parameter": "clearance_rate",
+      "quantile": 0.975,
+      "arm": "neutra",
+      "difference": -4.5292722753914605e-05,
+      "z": -0.01892068916368761
+    },
+    {
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.025,
+      "arm": "neutra",
+      "difference": -0.0755907928666456,
+      "z": -3.9774273205196344
+    },
+    {
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.25,
+      "arm": "neutra",
+      "difference": -0.17903783511890803,
+      "z": -1.3004730499504382
+    },
+    {
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.5,
+      "arm": "neutra",
+      "difference": -0.09387313113551543,
+      "z": -1.679820106896645
+    },
+    {
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.75,
+      "arm": "neutra",
+      "difference": -0.06538848600394731,
+      "z": -2.06266867884021
+    },
+    {
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.975,
+      "arm": "neutra",
+      "difference": -0.05229236875883081,
+      "z": -1.5476374960066575
+    },
+    {
+      "parameter": "infection_pop_scale",
+      "quantile": 0.025,
+      "arm": "neutra",
+      "difference": -0.00010840112004295577,
+      "z": -0.0022995506634627015
+    },
+    {
+      "parameter": "infection_pop_scale",
+      "quantile": 0.25,
+      "arm": "neutra",
+      "difference": 0.06459166663218074,
+      "z": 3.002881122012128
+    },
+    {
+      "parameter": "infection_pop_scale",
+      "quantile": 0.5,
+      "arm": "neutra",
+      "difference": 0.06299401311815256,
+      "z": 2.3810971665372724
+    },
+    {
+      "parameter": "infection_pop_scale",
+      "quantile": 0.75,
+      "arm": "neutra",
+      "difference": 0.036533212401133386,
+      "z": 2.294125973650163
+    },
+    {
+      "parameter": "infection_pop_scale",
+      "quantile": 0.975,
+      "arm": "neutra",
+      "difference": 0.01673069894217638,
+      "z": 1.5666478348499302
+    },
+    {
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.025,
+      "arm": "neutra",
+      "difference": -0.15917303861603482,
+      "z": -2.155778517766703
+    },
+    {
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.25,
+      "arm": "neutra",
+      "difference": -0.2447258589400434,
+      "z": -1.8421859189198455
+    },
+    {
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.5,
+      "arm": "neutra",
+      "difference": -0.3741147158396845,
+      "z": -1.6127384261347688
+    },
+    {
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.75,
+      "arm": "neutra",
+      "difference": -0.3247445105297526,
+      "z": -0.8544504207537351
+    },
+    {
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.975,
+      "arm": "neutra",
+      "difference": -0.12823864263753748,
+      "z": -0.1826275093848928
+    },
+    {
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.025,
+      "arm": "neutra",
+      "difference": 0.5869633051529473,
+      "z": 1.3400287429985285
+    },
+    {
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.25,
+      "arm": "neutra",
+      "difference": 0.15780379950511403,
+      "z": 0.21691168031446165
+    },
+    {
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.5,
+      "arm": "neutra",
+      "difference": 1.4894789928331598,
+      "z": 1.394079953398787
+    },
+    {
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.75,
+      "arm": "neutra",
+      "difference": 1.6905293910156551,
+      "z": 1.9359481521383926
+    },
+    {
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.975,
+      "arm": "neutra",
+      "difference": 0.4735865638335284,
+      "z": 6.05403897516935
+    },
+    {
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.025,
+      "arm": "neutra",
+      "difference": -2.2755317400021795,
+      "z": -2.032177965739194
+    },
+    {
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.25,
+      "arm": "neutra",
+      "difference": -1.1629048336585583,
+      "z": -0.7919233317484321
+    },
+    {
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.5,
+      "arm": "neutra",
+      "difference": -1.1601102684226134,
+      "z": -3.527286567713596
+    },
+    {
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.75,
+      "arm": "neutra",
+      "difference": -0.7851153366607377,
+      "z": -1.1048159730537765
+    },
+    {
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.975,
+      "arm": "neutra",
+      "difference": 0.20200954636743518,
+      "z": 0.27291550689835387
+    },
+    {
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.025,
+      "arm": "neutra",
+      "difference": -0.004809041084461174,
+      "z": -1.065108624612138
+    },
+    {
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.25,
+      "arm": "neutra",
+      "difference": -0.0008373484882565063,
+      "z": -0.039804794511529636
+    },
+    {
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.5,
+      "arm": "neutra",
+      "difference": 0.023242465493588438,
+      "z": 0.6432360116533683
+    },
+    {
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.75,
+      "arm": "neutra",
+      "difference": 0.013044180648616788,
+      "z": 0.363222063108625
+    },
+    {
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.975,
+      "arm": "neutra",
+      "difference": -0.06411221002216683,
+      "z": -1.661557381230372
+    },
+    {
+      "parameter": "pc_strength",
+      "quantile": 0.025,
+      "arm": "neutra",
+      "difference": -0.006106014144174353,
+      "z": -1.619398067320761
+    },
+    {
+      "parameter": "pc_strength",
+      "quantile": 0.25,
+      "arm": "neutra",
+      "difference": -0.005945513990156234,
+      "z": -0.24797858944130388
+    },
+    {
+      "parameter": "pc_strength",
+      "quantile": 0.5,
+      "arm": "neutra",
+      "difference": -0.02690258050118402,
+      "z": -0.7944492572612455
+    },
+    {
+      "parameter": "pc_strength",
+      "quantile": 0.75,
+      "arm": "neutra",
+      "difference": -0.02836779633051595,
+      "z": -0.3681147069337252
+    },
+    {
+      "parameter": "pc_strength",
+      "quantile": 0.975,
+      "arm": "neutra",
+      "difference": 0.071802316257918,
+      "z": 1.8214801169637085
+    },
+    {
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.025,
+      "arm": "neutra",
+      "difference": -0.003627643242289841,
+      "z": -0.6513452216879927
+    },
+    {
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.25,
+      "arm": "neutra",
+      "difference": 0.028683416496347147,
+      "z": 3.2919475424432947
+    },
+    {
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.5,
+      "arm": "neutra",
+      "difference": 0.027861812045701317,
+      "z": 3.3697856878493138
+    },
+    {
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.75,
+      "arm": "neutra",
+      "difference": 0.013692178120590648,
+      "z": 1.3438063794528585
+    },
+    {
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.975,
+      "arm": "neutra",
+      "difference": 0.005894730114702207,
+      "z": 1.3905813544807932
+    },
+    {
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.025,
+      "arm": "neutra",
+      "difference": -0.009919732275504356,
+      "z": -1.9784568230167947
+    },
+    {
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.25,
+      "arm": "neutra",
+      "difference": -0.023104318053195128,
+      "z": -1.5024762451271136
+    },
+    {
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.5,
+      "arm": "neutra",
+      "difference": -0.02659410210849289,
+      "z": -2.212883744535788
+    },
+    {
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.75,
+      "arm": "neutra",
+      "difference": -0.018771348318537773,
+      "z": -1.7606967855588223
+    },
+    {
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.975,
+      "arm": "neutra",
+      "difference": -0.0043925279947223395,
+      "z": -1.5821169460716806
+    },
+    {
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.025,
+      "arm": "neutra",
+      "difference": 0.0033251417098034974,
+      "z": 0.27506806470400297
+    },
+    {
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.25,
+      "arm": "neutra",
+      "difference": 0.016883781486548205,
+      "z": 0.6457301714033844
+    },
+    {
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.5,
+      "arm": "neutra",
+      "difference": 0.019009479959620157,
+      "z": 0.5833206943756626
+    },
+    {
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.75,
+      "arm": "neutra",
+      "difference": 0.030514020458834834,
+      "z": 1.2637204630111456
+    },
+    {
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.975,
+      "arm": "neutra",
+      "difference": 0.012692757307938396,
+      "z": 2.148463069726177
+    },
+    {
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.025,
+      "arm": "neutra",
+      "difference": -1.1943019393324475e-05,
+      "z": -1.337278630536542
+    },
+    {
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.25,
+      "arm": "neutra",
+      "difference": -5.124947524327893e-05,
+      "z": -2.604508871967353
+    },
+    {
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.5,
+      "arm": "neutra",
+      "difference": -5.358357670572322e-05,
+      "z": -2.502758937721152
+    },
+    {
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.75,
+      "arm": "neutra",
+      "difference": -3.4580147858817296e-05,
+      "z": -1.819381371524176
+    },
+    {
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.975,
+      "arm": "neutra",
+      "difference": 2.063800950962227e-05,
+      "z": 0.3190536992689857
+    },
+    {
+      "parameter": "recent_detection_rate",
+      "quantile": 0.025,
+      "arm": "neutra",
+      "difference": 0.10854610159646438,
+      "z": 1.031004267556065
+    },
+    {
+      "parameter": "recent_detection_rate",
+      "quantile": 0.25,
+      "arm": "neutra",
+      "difference": 0.03115959163557891,
+      "z": 0.2115880355291481
+    },
+    {
+      "parameter": "recent_detection_rate",
+      "quantile": 0.5,
+      "arm": "neutra",
+      "difference": 0.15175477723855568,
+      "z": 0.684682917415766
+    },
+    {
+      "parameter": "recent_detection_rate",
+      "quantile": 0.75,
+      "arm": "neutra",
+      "difference": 0.07101613668669327,
+      "z": 0.18096321993117037
+    },
+    {
+      "parameter": "recent_detection_rate",
+      "quantile": 0.975,
+      "arm": "neutra",
+      "difference": 0.07882770586490029,
+      "z": 0.4055172194012825
+    },
+    {
+      "parameter": "rel_sus_children",
+      "quantile": 0.025,
+      "arm": "neutra",
+      "difference": -0.0023543013063002105,
+      "z": -0.31330367874194603
+    },
+    {
+      "parameter": "rel_sus_children",
+      "quantile": 0.25,
+      "arm": "neutra",
+      "difference": 0.026145508451739963,
+      "z": 1.0149530909248279
+    },
+    {
+      "parameter": "rel_sus_children",
+      "quantile": 0.5,
+      "arm": "neutra",
+      "difference": 0.053823386687458896,
+      "z": 1.829519758265949
+    },
+    {
+      "parameter": "rel_sus_children",
+      "quantile": 0.75,
+      "arm": "neutra",
+      "difference": 0.011559466074997138,
+      "z": 0.41679873249184285
+    },
+    {
+      "parameter": "rel_sus_children",
+      "quantile": 0.975,
+      "arm": "neutra",
+      "difference": -0.005642453655925417,
+      "z": -0.15547979402233317
+    },
+    {
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.025,
+      "arm": "neutra",
+      "difference": -0.008663922076690311,
+      "z": -1.3409237090307105
+    },
+    {
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.25,
+      "arm": "neutra",
+      "difference": -0.014295771750300723,
+      "z": -0.7252069328856328
+    },
+    {
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.5,
+      "arm": "neutra",
+      "difference": -0.003688921582363336,
+      "z": -0.11251784062080757
+    },
+    {
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.75,
+      "arm": "neutra",
+      "difference": 0.02522025703589903,
+      "z": 1.4683967107630531
+    },
+    {
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.975,
+      "arm": "neutra",
+      "difference": 0.0057567986410089755,
+      "z": 0.8576538596027403
+    },
+    {
+      "parameter": "rel_sus_contained",
+      "quantile": 0.025,
+      "arm": "neutra",
+      "difference": -0.004159162923613985,
+      "z": -1.0851802924841467
+    },
+    {
+      "parameter": "rel_sus_contained",
+      "quantile": 0.25,
+      "arm": "neutra",
+      "difference": 0.0023334751872125525,
+      "z": 0.2701134166511658
+    },
+    {
+      "parameter": "rel_sus_contained",
+      "quantile": 0.5,
+      "arm": "neutra",
+      "difference": 0.003924365649842776,
+      "z": 0.23865183279954985
+    },
+    {
+      "parameter": "rel_sus_contained",
+      "quantile": 0.75,
+      "arm": "neutra",
+      "difference": 0.014226482900492388,
+      "z": 1.5171431202278607
+    },
+    {
+      "parameter": "rel_sus_contained",
+      "quantile": 0.975,
+      "arm": "neutra",
+      "difference": 0.003058568739846834,
+      "z": 0.9179517429284375
+    },
+    {
+      "parameter": "a_spread",
+      "quantile": 0.025,
+      "arm": "shear_nuts",
+      "difference": -0.21062571611422864,
+      "z": -1.3287599813762418
+    },
+    {
+      "parameter": "a_spread",
+      "quantile": 0.25,
+      "arm": "shear_nuts",
+      "difference": -0.29963994445714226,
+      "z": -1.1475450606119058
+    },
+    {
+      "parameter": "a_spread",
+      "quantile": 0.5,
+      "arm": "shear_nuts",
+      "difference": -0.2789309014157002,
+      "z": -1.0111221608253753
+    },
+    {
+      "parameter": "a_spread",
+      "quantile": 0.75,
+      "arm": "shear_nuts",
+      "difference": 0.15039772071030555,
+      "z": 0.28783228111763237
+    },
+    {
+      "parameter": "a_spread",
+      "quantile": 0.975,
+      "arm": "shear_nuts",
+      "difference": 1.1976796261275044,
+      "z": 1.4735126006369623
+    },
+    {
+      "parameter": "bg_mixing",
+      "quantile": 0.025,
+      "arm": "shear_nuts",
+      "difference": -0.0001134633249108754,
+      "z": -1.0968594200995785
+    },
+    {
+      "parameter": "bg_mixing",
+      "quantile": 0.25,
+      "arm": "shear_nuts",
+      "difference": -0.0008285345071869701,
+      "z": -1.3577319560153236
+    },
+    {
+      "parameter": "bg_mixing",
+      "quantile": 0.5,
+      "arm": "shear_nuts",
+      "difference": -0.0008796606682316618,
+      "z": -0.46758760719612086
+    },
+    {
+      "parameter": "bg_mixing",
+      "quantile": 0.75,
+      "arm": "shear_nuts",
+      "difference": -0.0006330233190013912,
+      "z": -0.1414303623653986
+    },
+    {
+      "parameter": "bg_mixing",
+      "quantile": 0.975,
+      "arm": "shear_nuts",
+      "difference": -0.0011203834153398554,
+      "z": -0.6957443618296398
+    },
+    {
+      "parameter": "breakdown_rate",
+      "quantile": 0.025,
+      "arm": "shear_nuts",
+      "difference": -0.006004941601579827,
+      "z": -0.17398905051399965
+    },
+    {
+      "parameter": "breakdown_rate",
+      "quantile": 0.25,
+      "arm": "shear_nuts",
+      "difference": 0.0016765155282514321,
+      "z": 0.07023456406049715
+    },
+    {
+      "parameter": "breakdown_rate",
+      "quantile": 0.5,
+      "arm": "shear_nuts",
+      "difference": 0.012503797613904855,
+      "z": 0.7353175278511703
+    },
+    {
+      "parameter": "breakdown_rate",
+      "quantile": 0.75,
+      "arm": "shear_nuts",
+      "difference": 0.03454261223655186,
+      "z": 1.691019046675345
+    },
+    {
+      "parameter": "breakdown_rate",
+      "quantile": 0.975,
+      "arm": "shear_nuts",
+      "difference": 0.025244663446406634,
+      "z": 4.536465334242897
+    },
+    {
+      "parameter": "clearance_rate",
+      "quantile": 0.025,
+      "arm": "shear_nuts",
+      "difference": 0.0008728914784276575,
+      "z": 0.9916175704239819
+    },
+    {
+      "parameter": "clearance_rate",
+      "quantile": 0.25,
+      "arm": "shear_nuts",
+      "difference": -0.002565865615966008,
+      "z": -0.4844332580555769
+    },
+    {
+      "parameter": "clearance_rate",
+      "quantile": 0.5,
+      "arm": "shear_nuts",
+      "difference": -0.0003898445002260692,
+      "z": -0.05677346047053559
+    },
+    {
+      "parameter": "clearance_rate",
+      "quantile": 0.75,
+      "arm": "shear_nuts",
+      "difference": -1.5407471591566413e-05,
+      "z": -0.002259887537158319
+    },
+    {
+      "parameter": "clearance_rate",
+      "quantile": 0.975,
+      "arm": "shear_nuts",
+      "difference": 0.0018038795477926112,
+      "z": 1.03465290527758
+    },
+    {
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.025,
+      "arm": "shear_nuts",
+      "difference": 0.007787213204768051,
+      "z": 0.20802281850378423
+    },
+    {
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.25,
+      "arm": "shear_nuts",
+      "difference": -0.0286294820196491,
+      "z": -0.9339208843010999
+    },
+    {
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.5,
+      "arm": "shear_nuts",
+      "difference": -0.031609431270462895,
+      "z": -1.5927325588486925
+    },
+    {
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.75,
+      "arm": "shear_nuts",
+      "difference": -0.07510947595445194,
+      "z": -2.4021347801115307
+    },
+    {
+      "parameter": "clinical_progression_rate",
+      "quantile": 0.975,
+      "arm": "shear_nuts",
+      "difference": -0.0775899292277975,
+      "z": -0.8454585309329954
+    },
+    {
+      "parameter": "infection_pop_scale",
+      "quantile": 0.025,
+      "arm": "shear_nuts",
+      "difference": -0.04203813793576833,
+      "z": -0.9899129788586439
+    },
+    {
+      "parameter": "infection_pop_scale",
+      "quantile": 0.25,
+      "arm": "shear_nuts",
+      "difference": 0.048662088669261694,
+      "z": 2.9471739669180477
+    },
+    {
+      "parameter": "infection_pop_scale",
+      "quantile": 0.5,
+      "arm": "shear_nuts",
+      "difference": 0.04203209380934658,
+      "z": 1.7007113884578575
+    },
+    {
+      "parameter": "infection_pop_scale",
+      "quantile": 0.75,
+      "arm": "shear_nuts",
+      "difference": 0.0389097058831116,
+      "z": 2.251626981243306
+    },
+    {
+      "parameter": "infection_pop_scale",
+      "quantile": 0.975,
+      "arm": "shear_nuts",
+      "difference": 0.017097470132944936,
+      "z": 1.7556950487374048
+    },
+    {
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.025,
+      "arm": "shear_nuts",
+      "difference": -0.1161432137924523,
+      "z": -1.176708080471759
+    },
+    {
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.25,
+      "arm": "shear_nuts",
+      "difference": -0.19285002850071642,
+      "z": -1.4060023729110358
+    },
+    {
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.5,
+      "arm": "shear_nuts",
+      "difference": -0.03532929282348274,
+      "z": -0.22801129605787576
+    },
+    {
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.75,
+      "arm": "shear_nuts",
+      "difference": -0.02420203483693051,
+      "z": -0.07817102167330117
+    },
+    {
+      "parameter": "infectiousness_gain_rate",
+      "quantile": 0.975,
+      "arm": "shear_nuts",
+      "difference": -0.7278565298883075,
+      "z": -1.3246212747158697
+    },
+    {
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.025,
+      "arm": "shear_nuts",
+      "difference": -0.201319656395893,
+      "z": -0.3446792233668369
+    },
+    {
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.25,
+      "arm": "shear_nuts",
+      "difference": 0.22659517187237732,
+      "z": 0.47806571166943906
+    },
+    {
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.5,
+      "arm": "shear_nuts",
+      "difference": 0.800296076858972,
+      "z": 1.332615973512581
+    },
+    {
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.75,
+      "arm": "shear_nuts",
+      "difference": 1.1771813433040101,
+      "z": 1.5097696914190144
+    },
+    {
+      "parameter": "mixing_dist_sd",
+      "quantile": 0.975,
+      "arm": "shear_nuts",
+      "difference": 0.36611012888874583,
+      "z": 3.3453553453521927
+    },
+    {
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.025,
+      "arm": "shear_nuts",
+      "difference": -1.7651043288701658,
+      "z": -2.726933485695384
+    },
+    {
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.25,
+      "arm": "shear_nuts",
+      "difference": -1.8389876502751576,
+      "z": -1.4673619756153293
+    },
+    {
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.5,
+      "arm": "shear_nuts",
+      "difference": -0.30715787313738474,
+      "z": -0.697893791982462
+    },
+    {
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.75,
+      "arm": "shear_nuts",
+      "difference": 1.3554906010892864,
+      "z": 1.406588175381427
+    },
+    {
+      "parameter": "passive_detection_inflection",
+      "quantile": 0.975,
+      "arm": "shear_nuts",
+      "difference": 1.8226597120847146,
+      "z": 1.885777740981711
+    },
+    {
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.025,
+      "arm": "shear_nuts",
+      "difference": -0.006957739940327112,
+      "z": -1.0448685913970932
+    },
+    {
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.25,
+      "arm": "shear_nuts",
+      "difference": -0.004426514132749471,
+      "z": -0.39963181358309735
+    },
+    {
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.5,
+      "arm": "shear_nuts",
+      "difference": -0.02130215057554008,
+      "z": -0.9718394376177255
+    },
+    {
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.75,
+      "arm": "shear_nuts",
+      "difference": -0.010832229731239318,
+      "z": -0.3042358477449165
+    },
+    {
+      "parameter": "passive_detection_past_frac",
+      "quantile": 0.975,
+      "arm": "shear_nuts",
+      "difference": 0.07117791353211778,
+      "z": 1.6755368617398594
+    },
+    {
+      "parameter": "pc_strength",
+      "quantile": 0.025,
+      "arm": "shear_nuts",
+      "difference": -0.004409072818385106,
+      "z": -1.158838408377218
+    },
+    {
+      "parameter": "pc_strength",
+      "quantile": 0.25,
+      "arm": "shear_nuts",
+      "difference": -0.011155854704832754,
+      "z": -0.5835677892410774
+    },
+    {
+      "parameter": "pc_strength",
+      "quantile": 0.5,
+      "arm": "shear_nuts",
+      "difference": -0.009557760099973972,
+      "z": -0.2716559784669176
+    },
+    {
+      "parameter": "pc_strength",
+      "quantile": 0.75,
+      "arm": "shear_nuts",
+      "difference": 0.08322465817933006,
+      "z": 0.6010587559027549
+    },
+    {
+      "parameter": "pc_strength",
+      "quantile": 0.975,
+      "arm": "shear_nuts",
+      "difference": 0.043751091850336654,
+      "z": 1.6613712369192495
+    },
+    {
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.025,
+      "arm": "shear_nuts",
+      "difference": -0.009627874392477559,
+      "z": -1.544587570865842
+    },
+    {
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.25,
+      "arm": "shear_nuts",
+      "difference": -0.0036027673128167237,
+      "z": -0.42836042388418194
+    },
+    {
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.5,
+      "arm": "shear_nuts",
+      "difference": 0.011473491094230792,
+      "z": 0.9138305259275309
+    },
+    {
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.75,
+      "arm": "shear_nuts",
+      "difference": 0.01516766245248058,
+      "z": 1.774867756844769
+    },
+    {
+      "parameter": "prev_se_cleared_tst",
+      "quantile": 0.975,
+      "arm": "shear_nuts",
+      "difference": 0.004571621894136846,
+      "z": 0.7765076808340279
+    },
+    {
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.025,
+      "arm": "shear_nuts",
+      "difference": -0.011377754705593213,
+      "z": -2.3511546480352803
+    },
+    {
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.25,
+      "arm": "shear_nuts",
+      "difference": -0.03628277498839827,
+      "z": -3.157775008505411
+    },
+    {
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.5,
+      "arm": "shear_nuts",
+      "difference": -0.023762828415897386,
+      "z": -1.846794354708016
+    },
+    {
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.75,
+      "arm": "shear_nuts",
+      "difference": -0.01496475040211942,
+      "z": -1.6061921016726584
+    },
+    {
+      "parameter": "prev_se_subclin_inf_cxr",
+      "quantile": 0.975,
+      "arm": "shear_nuts",
+      "difference": -0.004511815542746045,
+      "z": -1.3240421947710344
+    },
+    {
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.025,
+      "arm": "shear_nuts",
+      "difference": 0.017150941426063798,
+      "z": 1.3497709049712652
+    },
+    {
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.25,
+      "arm": "shear_nuts",
+      "difference": 0.03928676127559269,
+      "z": 1.4310283169936573
+    },
+    {
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.5,
+      "arm": "shear_nuts",
+      "difference": 0.0471501647637102,
+      "z": 1.689342149139347
+    },
+    {
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.75,
+      "arm": "shear_nuts",
+      "difference": 0.041713871519297785,
+      "z": 2.034018140354764
+    },
+    {
+      "parameter": "prev_se_subclin_lowinf_cxr",
+      "quantile": 0.975,
+      "arm": "shear_nuts",
+      "difference": 0.02647875006212841,
+      "z": 3.179706436276825
+    },
+    {
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.025,
+      "arm": "shear_nuts",
+      "difference": -1.3766443833703314e-05,
+      "z": -1.4723394985383753
+    },
+    {
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.25,
+      "arm": "shear_nuts",
+      "difference": -3.005885724385128e-05,
+      "z": -2.5365010038279094
+    },
+    {
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.5,
+      "arm": "shear_nuts",
+      "difference": -3.659176868736635e-05,
+      "z": -2.6787413962277213
+    },
+    {
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.75,
+      "arm": "shear_nuts",
+      "difference": -3.093242664240414e-05,
+      "z": -1.8943066527234607
+    },
+    {
+      "parameter": "raw_transmission_rate",
+      "quantile": 0.975,
+      "arm": "shear_nuts",
+      "difference": 8.513725761489014e-05,
+      "z": 0.8868337480101693
+    },
+    {
+      "parameter": "recent_detection_rate",
+      "quantile": 0.025,
+      "arm": "shear_nuts",
+      "difference": 0.0856930875382127,
+      "z": 0.7520429271475536
+    },
+    {
+      "parameter": "recent_detection_rate",
+      "quantile": 0.25,
+      "arm": "shear_nuts",
+      "difference": -0.04325662471476699,
+      "z": -0.21176661506506367
+    },
+    {
+      "parameter": "recent_detection_rate",
+      "quantile": 0.5,
+      "arm": "shear_nuts",
+      "difference": 0.06119566019051392,
+      "z": 0.5813952216223562
+    },
+    {
+      "parameter": "recent_detection_rate",
+      "quantile": 0.75,
+      "arm": "shear_nuts",
+      "difference": 0.07199204160033501,
+      "z": 0.4168325206330227
+    },
+    {
+      "parameter": "recent_detection_rate",
+      "quantile": 0.975,
+      "arm": "shear_nuts",
+      "difference": -0.013495889507491476,
+      "z": -0.07970409828549761
+    },
+    {
+      "parameter": "rel_sus_children",
+      "quantile": 0.025,
+      "arm": "shear_nuts",
+      "difference": -0.0043858451032624535,
+      "z": -0.5641028348357653
+    },
+    {
+      "parameter": "rel_sus_children",
+      "quantile": 0.25,
+      "arm": "shear_nuts",
+      "difference": -0.005467502944341007,
+      "z": -0.3289106023213378
+    },
+    {
+      "parameter": "rel_sus_children",
+      "quantile": 0.5,
+      "arm": "shear_nuts",
+      "difference": 0.007375749216061989,
+      "z": 0.3184591690856661
+    },
+    {
+      "parameter": "rel_sus_children",
+      "quantile": 0.75,
+      "arm": "shear_nuts",
+      "difference": -0.004425040422019633,
+      "z": -0.14100756295953124
+    },
+    {
+      "parameter": "rel_sus_children",
+      "quantile": 0.975,
+      "arm": "shear_nuts",
+      "difference": 0.019978011801674245,
+      "z": 0.5846160687197397
+    },
+    {
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.025,
+      "arm": "shear_nuts",
+      "difference": -0.016949373705063886,
+      "z": -1.9607283823621162
+    },
+    {
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.25,
+      "arm": "shear_nuts",
+      "difference": -0.0024304664774971174,
+      "z": -0.11658245427137587
+    },
+    {
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.5,
+      "arm": "shear_nuts",
+      "difference": 0.007993990440819387,
+      "z": 0.24335269019329359
+    },
+    {
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.75,
+      "arm": "shear_nuts",
+      "difference": 0.020546404447231992,
+      "z": 1.5604414972902974
+    },
+    {
+      "parameter": "rel_sus_cleared",
+      "quantile": 0.975,
+      "arm": "shear_nuts",
+      "difference": 0.012892482905951352,
+      "z": 3.0051786489707633
+    },
+    {
+      "parameter": "rel_sus_contained",
+      "quantile": 0.025,
+      "arm": "shear_nuts",
+      "difference": -0.005081957542342863,
+      "z": -1.663009897640682
+    },
+    {
+      "parameter": "rel_sus_contained",
+      "quantile": 0.25,
+      "arm": "shear_nuts",
+      "difference": -0.029560919236082228,
+      "z": -1.4290638421880264
+    },
+    {
+      "parameter": "rel_sus_contained",
+      "quantile": 0.5,
+      "arm": "shear_nuts",
+      "difference": -0.03147204496993705,
+      "z": -2.682312802089073
+    },
+    {
+      "parameter": "rel_sus_contained",
+      "quantile": 0.75,
+      "arm": "shear_nuts",
+      "difference": -0.005487555951913914,
+      "z": -0.5829219629279448
+    },
+    {
+      "parameter": "rel_sus_contained",
+      "quantile": 0.975,
+      "arm": "shear_nuts",
+      "difference": 0.0035580031677212576,
+      "z": 0.6966564968155486
+    }
+  ],
+  "comparison_summary": {
+    "neutra": {
+      "abs_z_median": 1.1048159730537765,
+      "abs_z_max": 6.05403897516935,
+      "frac_abs_z_gt_2": 0.2,
+      "worst": {
+        "parameter": "mixing_dist_sd",
+        "quantile": 0.975,
+        "z": 6.05403897516935
+      }
+    },
+    "shear_nuts": {
+      "abs_z_median": 1.0968594200995785,
+      "abs_z_max": 4.536465334242897,
+      "frac_abs_z_gt_2": 0.14736842105263157,
+      "worst": {
+        "parameter": "breakdown_rate",
+        "quantile": 0.975,
+        "z": 4.536465334242897
+      }
+    }
+  }
+}

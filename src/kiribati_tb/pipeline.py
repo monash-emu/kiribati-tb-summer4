@@ -825,7 +825,8 @@ def laplace_psis(
     ok = np.isfinite(log_p) & (log_p > -1e29)  # a failed solve has zero posterior density
     lw = np.full(n, -np.inf)
     ratio = log_p[ok] - log_q[ok]
-    smoothed, k_hat = array_stats.psislw(ratio - np.max(ratio))
+    # psislw negates its input (PSIS-LOO convention: it takes -log weights).
+    smoothed, k_hat = array_stats.psislw(-(ratio - np.max(ratio)))
     lw[ok] = np.asarray(smoothed)
     lw = lw - np.logaddexp.reduce(lw[ok])
     ess = float(1.0 / np.sum(np.exp(2 * lw[ok])))
