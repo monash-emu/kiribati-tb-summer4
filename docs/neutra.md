@@ -4,14 +4,21 @@
 Kiribati posterior faster, and is its answer correct? NeuTra fits a normalising flow to the
 posterior by SVI, then runs NUTS on the flow's base variable.
 
-**Short answer.** The flow trains easily: about 50 minutes and 6,000 gradients here, roughly
-15% of one NUTS warmup. But it does **not** make NUTS cheaper on this posterior. In matched
-runs, NUTS in the warped coordinates needs the same trajectory length as the pipeline's
-sheared, Laplace-started dense-metric NUTS (55 leapfrog steps per iteration against 56), and
-diverges more often (14.5% against 7% in the second warmup round). Do not adopt it. The
-measurements say what limits NUTS here is the step size, not the posterior's large-scale
-shape, and a flow cannot fix that (see *What limits NUTS*). Sampling-phase ESS figures are in
-*Sampling* below, as far as the runs got on this machine.
+**Short answer.** The flow trains easily: 6,000 gradients and about 50 minutes on a loaded
+machine, under 15% of one NUTS warmup. But it makes NUTS **worse** on this posterior, not
+better. In matched runs against the pipeline's sheared, Laplace-started dense-metric NUTS,
+NeuTra:
+
+- needed the same trajectories in warmup (55 leapfrog steps per iteration against 56);
+- diverged 26–31% of the time in sampling against 6–7%, with one of four chains stuck;
+- spent about 1,900 gradients per effective draw against about 860, with R-hat 1.21 after
+  150 draws per chain against 1.11 after 100.
+
+On the draws it has, the shear baseline agrees with the published posterior within Monte Carlo
+error. NeuTra's draws are not yet a valid sample. **Recommendation: do not adopt NeuTra; keep
+the sheared dense-metric NUTS.** NUTS here is limited by the posterior's local curvature (the
+energy error at step 0.1 is the same for a 1e-8 solve), and this flow does not remove it. A
+flow trained on the base case also does not carry across the grid.
 
 All the numbers come from `docs/figures/neutra/report.json` (written by
 `scripts/neutra_report.py`) and the run folders under `outputs/neutra/` (not committed).
@@ -129,15 +136,79 @@ round had 63.6 leapfrog steps and 21% divergences.
 
 ### Sampling
 
-SAMPLING_TABLE
+Both arms continue from their warmed-up state, in 50-draw chunks, with the pipeline's stop
+rule. The pipeline's default `max_divergence_frac = 0.02` stopped **both** after their first
+chunk (5.5% and 31%), so they were resumed with that check off (`--max-divergence-frac 1`).
+The pipeline's own default would end a production run of the shear NUTS the same way.
+
+| | NeuTra (IAF) | Shear NUTS baseline |
+| --- | --- | --- |
+| Draws per chain (4 chains) | 150 | 100 (still running) |
+| Leapfrog steps per draw: mean (median) | 37.9 (31) | 79.1 (63) |
+| Tree depth: share of draws at depth 5–6 / 7–8 | 77% / 2% | 61% / 34% |
+| Divergent transitions | 26% (chain 1 alone: 86% in the first chunk) | 7.3% |
+| Split R-hat, worst parameter | 1.21 (1.69 after 50 draws) | 1.11 (1.07 after 50) |
+| ESS, worst parameter (bulk / tail) | 13.6 / 12.1 | 36.8 / 64.7 |
+| Gradient evaluations | 22,700 | 31,700 |
+| **Gradients per effective draw** | **≈ 1,900** | **≈ 860** |
+
+The warped trees are *shorter* only because divergences end them early. One warped chain
+spent its first 50 draws stuck, with 86% divergences and about half the other chains'
+spread in `infection_pop_scale` and `breakdown_rate`: the flow had squeezed the region it
+sat in. ESS from 100–150 draws per chain is itself noisy (the baseline's minimum bulk ESS
+moved from 58 to 37 between chunks), so treat the ratio as about 2×, not as precise. Its
+direction agrees with every other measurement.
 
 ### 3. Is the posterior right?
 
-CORRECTNESS
+Both arms against the published posterior (draws 10,000–19,999 of its 8 chains). That
+reference is itself not converged (R-hat up to 1.16), and arviz's MCSE assumes stationarity, so
+its MCSE is an underestimate; a correct sampler should show more than 5% of quantiles beyond
+2 combined MCSE.
+
+| | median \|z\| | share of quantiles with \|z\| > 2 | worst |
+| --- | --- | --- | --- |
+| Shear NUTS (100 draws per chain) | 1.10 | 15% | `breakdown_rate` 97.5%: z = 4.5 |
+| NeuTra (150 draws per chain) | 1.10 | 20% | `mixing_dist_sd` 97.5%: z = 6.1 |
+
+(z: the difference of a 2.5/25/50/75/97.5% quantile from the published one, in combined MCSE.)
+
+![Quantile differences](figures/neutra/quantile_z.png)
+
+![Marginals](figures/neutra/marginals.png)
+
+![Transmission ridge](figures/neutra/ridge.png)
+
+![Trade-offs](figures/neutra/tradeoffs.png)
+
+Both arms find the same region: one mode, the curved transmission ridge, mass against the
+bounds of `infection_pop_scale`, `bg_mixing`, `pc_strength`, `rel_sus_children` and
+`passive_detection_past_frac`, and the L-shaped trade-offs. The marginals agree with the
+published ones as far as a few hundred draws can show. The shear baseline is consistent with
+the published posterior at its MC error; its worst quantile is the upper tail of
+`breakdown_rate`, which piles against its bound at 1.0. NeuTra's agreement is similar, but its
+R-hat of 1.21 means its draws are not a valid sample yet, so its correctness is not
+established. Nothing here suggests NeuTra is biased: its chains are in the right place, just
+stuck. No converged reference posterior (the MASSIVE runs) was available to compare
+against.
 
 ### 4. Cost-benefit, and reusing one flow across the grid
 
-COST
+Time to the stop rule (R-hat < 1.01, bulk and tail ESS ≥ 400), from the measured rates.
+These are estimates from a few hundred draws: gradients per effective draw are uncertain by
+about ±50%.
+
+| | Flow | Warmup (2 × 100 × 4 chains) | Sampling to ESS 400 | Total gradients | Wall time, 8 idle cores at 0.175 s per gradient (8 chains) |
+| --- | --- | --- | --- | --- | --- |
+| Shear NUTS | – | ≈ 46,000 | 400 × 860 ≈ 340,000 | ≈ 390,000 | ≈ 2.5 h (warmup doubles to ≈ 92,000 with 8 chains) |
+| NeuTra (IAF) | 6,000 (one core) | ≈ 44,000 | 400 × 1,900 ≈ 760,000, if the stuck chain frees itself | ≈ 810,000 | ≈ 5 h, plus ≈ 15 min for the flow; may never converge |
+
+Both fit in a cluster job. The shear NUTS is the cheaper one by about 2× and, unlike NeuTra,
+is not at risk of a stuck chain. The flow's own cost (6,000 gradients, 1,500 SVI steps; 300
+would have done) is small next to either. That is NeuTra's whole cost-benefit here: the
+flow is cheap, but NUTS on it is slower. Reusing one flow across the grid's 16
+configurations and three analyses would not change this. Its quality falls off badly away
+from the base case (below), and it was not worth having at the base case.
 
 **Reusing one flow** (`scripts/neutra_reuse.py`, `outputs/neutra/reuse/checks.jsonl`). The
 base-case flow and coordinates were kept unchanged and scored under each grid
@@ -202,15 +273,16 @@ failed solves: 0 of 80 flow draws, and 0 of 40 at 1.5× the base scale, had eith
 ## Recommendation
 
 **Do not use NeuTra for this model.** Keep the pipeline's sheared, Laplace-started
-dense-metric NUTS. Training the flow is cheap and robust, so it is not the obstacle, but the
-warped NUTS is no faster per draw and diverges more. A flow strong enough to change the local curvature (deeper or block-neural flows, or a
-mass-covering objective) is the only version worth trying, and the evidence here does not
-suggest it would repay its cost.
+dense-metric NUTS. Training the flow is cheap and robust, so that is not the obstacle. But
+NUTS on the warped posterior takes about twice the gradients per effective draw, diverges
+four times as often, and can strand a chain. The only version worth another try is a flow
+strong enough to change the local curvature: deeper or block-neural flows, or a
+mass-covering objective. The evidence here does not suggest it would repay its cost.
 
-`kiribati_tb.neutra` stays as a tested, checkpointed arm (`scripts/neutra.py`, with the same
-`--chains/--chunk/--max-hours` flags as `scripts/calibrate.py`), so the experiment can be
-rerun if the step-size limit is lifted. A flow that mixes better might then show a
-difference.
+`kiribati_tb.neutra` stays as a tested, checkpointed arm. `scripts/neutra.py` has the same
+`--chains/--chunk/--max-hours` flags as `scripts/calibrate.py` and could join the cluster kit
+as is. `--flow none --dense-mass` is a useful arm in its own right: the pipeline's NUTS with
+tree sizes recorded (W10).
 
 ## Also found
 
@@ -225,4 +297,23 @@ difference.
 
 ## What was not verified
 
-NOT_VERIFIED
+- **Convergence of either arm.** Neither reached the stop rule. The machine's load (average
+  20–95 on 10 cores; each 4-chain run had about one core) held each to 100–150 draws per chain
+  in about 5.5 hours. Gradients per effective draw come from those draws and carry wide
+  uncertainty. At the time of writing the shear baseline is still sampling, toward a 12-hour
+  budget, in `outputs/neutra/baseline_shear/`.
+- **Correctness against a converged reference.** Only the unconverged published posterior was
+  available. The MASSIVE reference runs on `feat/k4b-fast-calibration` should replace it:
+  `pixi run python scripts/neutra_report.py --arm reference=<idata.nc>`.
+- **Other flows.** Only `AutoIAFNormal` (2 flows, hidden `[38, 38]`) with reverse KL was
+  tried. Not tried: `AutoBNAFNormal` (`--flow bnaf`), deeper IAFs, mass-covering objectives
+  (e.g. `RenyiELBO` with α < 1), NeuTra without the ridge shear (`--no-shear`), and a dense
+  metric in the warped space. The diagnosis (local curvature, with a flow that under-covers)
+  says only a much stronger flow could help.
+- **The new calibration solver.** All runs use the original Dopri5 setting. The branch's
+  Bosh3 solver changes the cost per gradient, and according to `docs/gradient-performance.md`
+  not the energy error that limits the step size. That was not checked with a NeuTra run.
+- **Warm-starting SVI from the base flow** for another configuration was not run. With 200–300
+  steps enough from a fresh Laplace start, there is little for a warm start to save.
+- **Wall times.** All wall-clock numbers come from a heavily shared machine. The idle-machine
+  estimates scale the gradient counts by the 0.175 s idle gradient time.

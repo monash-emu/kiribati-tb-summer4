@@ -179,7 +179,7 @@ def plot_quantile_z(cmp: pd.DataFrame, out: Path) -> None:
     arms = sorted(cmp["arm"].unique())
     fig, ax = plt.subplots(figsize=(10, 5))
     params = sorted(cmp["parameter"].unique())
-    for k, (colour, arm) in enumerate(zip(COLOURS, arms)):
+    for k, (colour, arm) in enumerate(zip(COLOURS[1:], arms)):
         f = cmp[cmp["arm"] == arm]
         y = np.asarray([params.index(p) for p in f["parameter"]]) + 0.15 * k
         ax.scatter(f["z"], y, s=12, color=colour, label=arm)
